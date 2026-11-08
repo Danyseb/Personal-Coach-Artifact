@@ -156,6 +156,10 @@ td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabula
 .food input{padding:8px 6px;font-size:14px}
 @media (max-width:620px){.food{grid-template-columns:repeat(5,minmax(0,1fr)) 34px}.food .fn{grid-column:1/-1}.food-h{display:none}}
 .food-h{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.guide ol,.guide ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:68ch}
+.guide li::marker{color:var(--accent);font-weight:600}
+.guide b{color:var(--fg)}
+.guide .kbd{font-family:var(--f-mono);font-size:12.5px;background:var(--sunk);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--ink-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
 .confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
 @media (prefers-reduced-motion:no-preference){.tabs button{transition:background .15s,color .15s}}
@@ -404,7 +408,7 @@ function suggestions(){
 }
 
 /* ======================= tabs ======================= */
-const TABS=[["hoy","Hoy"],["rutina","Rutina"],["nutricion","Nutrición"],["progreso","Progreso"],["perfil","Perfil"],["coach","Coach IA"]];
+const TABS=[["hoy","Hoy"],["rutina","Rutina"],["nutricion","Nutrición"],["progreso","Progreso"],["perfil","Perfil"],["coach","Coach IA"],["guia","Guía"]];
 let tab="hoy"; try{const t=localStorage.getItem(LS+"-tab");if(t&&TABS.some(x=>x[0]===t))tab=t}catch(e){}
 if(TABS.some(x=>"#"+x[0]===location.hash)) tab=location.hash.slice(1);
 function renderTabs(){$("#tabs").innerHTML=TABS.map(([k,l])=>`<button role="tab" id="tab-${k}" aria-selected="${k===tab}" data-tab="${k}">${l}</button>`).join("")}
@@ -764,6 +768,67 @@ AFTER.progreso=()=>{
     saveRecord("checkins",rec);render();toast(RED.test(rec.notes)?"Guardado. Lee el aviso de salud.":"Check-in guardado");
   };
 };
+
+/* ---------- GUÍA ---------- */
+VIEWS.guia=()=>`
+<section class="panel guide"><h2>Cómo usar tu Coach</h2>
+<p class="lead">Todo se guarda solo mientras escribes. El indicador de arriba dice dónde: <b>nube</b> (tu cuenta de claude.ai, solo tú la lees) o <b>este navegador</b>.</p>
+<h3>Tu semana en 4 pasos</h3>
+<ol>
+<li><b>Una vez:</b> llena <b>Perfil</b> (edad, estatura, peso, objetivo, equipo, lesiones, alimentos). Con eso se calculan tus calorías.</li>
+<li><b>Cada entreno:</b> abre <b>Hoy</b>, registra cada serie y toca <b>Guardar sesión</b>.</li>
+<li><b>Cada ${esc(S.profile.checkinDay||"domingo")}:</b> haz el <b>check-in</b> en <b>Progreso</b> y revisa los ajustes sugeridos.</li>
+<li><b>Cuando quieras:</b> pregúntale al <b>Coach IA</b> por tu progresión, tu plan de la semana o tus skills.</li>
+</ol></section>
+
+<section class="panel guide"><h2>Hoy</h2><ul>
+<li>Abre solo el día de la semana: lunes = Día 1 … domingo = Día 7. Puedes cambiarlo en <b>Sesión</b>.</li>
+<li>Solo aparecen con casillas los ejercicios marcados con <b>●</b> en Rutina; el resto sale como checklist.</li>
+<li>Columnas: <b>kg extra</b> (lastre sobre tu peso; 0 si es solo peso corporal), <b>reps</b> (o segundos en holds), <b>RIR</b> (reps que te faltaron para el fallo) y <b>m/km</b> si el ejercicio tiene distancia.</li>
+<li>El texto gris en cada casilla es lo que hiciste la vez pasada. Debajo del nombre verás la <b>sugerencia de progresión</b>.</li>
+<li>Escribe en <b>Notas</b> molestias o sensaciones. Si escribes "dolor agudo", "mareo" o similar, aparece un aviso médico y se pausan las subidas de carga.</li>
+<li>Lo que escribes queda como borrador aunque cierres la app; se registra al tocar <b>Guardar sesión</b>.</li>
+</ul></section>
+
+<section class="panel guide"><h2>Rutina</h2><ul>
+<li>Todo es editable: nombre del programa, días, bloques y cada ejercicio. Usa <b>+ Ejercicio</b>, <b>+ Bloque</b> y la <b>×</b> para borrar.</li>
+<li>Campos: series · reps (rango, "max", "30-45 s") · carga · <b>RIR objetivo</b> · <b>distancia + unidad</b> · descanso · <b>●</b>.</li>
+<li><b>RIR objetivo:</b> la app compara tu RIR real contra este número para decirte si subir o mantener.</li>
+<li><b>Distancia:</b> elige m o km para que aparezca la columna de distancia en Hoy (Farmer Carry, Long Run, sprints).</li>
+<li><b>●</b> = se registra con datos y entra en las gráficas y en las reglas de estancamiento.</li>
+<li><b>Restaurar rutina base</b> vuelve al programa original sin borrar tus registros.</li>
+</ul></section>
+
+<section class="panel guide"><h2>Cómo decide la progresión</h2><ul>
+<li><b>Fuerza (doble progresión):</b> primero subes reps dentro del rango. Si llegas al tope en todas las series con RIR ≥ tu objetivo, sube 1.25–2.5 kg.</li>
+<li>Si tu RIR real queda por debajo del objetivo, repite la carga. Si te sobran reps, te avisa que subas.</li>
+<li><b>Carries:</b> si completas la distancia en todas las series, sube 2.5–5 kg.</li>
+<li><b>Carrera:</b> +5–10% de distancia por semana a ritmo conversacional; cada 4ª semana repite o baja.</li>
+</ul></section>
+
+<section class="panel guide"><h2>Nutrición</h2><ul>
+<li>Las calorías se calculan con <b>Mifflin-St Jeor</b> × un factor de actividad según tus días de entreno, más el déficit o superávit de tu objetivo.</li>
+<li>Proteína y grasa van por kg de peso; los carbohidratos son el resto. Puedes mover los porcentajes y g/kg.</li>
+<li><b>Ajuste acumulado</b> guarda los cambios de calorías que aplicas desde Progreso.</li>
+<li>El menú es editable; el total te dice si estás dentro de ±5% de tu meta. También lo puedes generar en Coach IA.</li>
+</ul></section>
+
+<section class="panel guide"><h2>Progreso</h2><ul>
+<li><b>Check-in:</b> peso promedio (pésate 3 o más mañanas), medidas, adherencia, energía, sueño, hambre y la habilidad nueva del mes.</li>
+<li><b>Reglas automáticas:</b>
+  <ul><li>Peso sin moverse 2 semanas con adherencia ≥ 80% → ±150 kcal.</li>
+  <li>Energía o sueño promedio menor a 5 → −20% de series en ejercicios ●.</li>
+  <li>3 sesiones sin superar tu mejor serie → cambia el esquema o el ejercicio.</li></ul></li>
+<li>Toca <b>Aplicar</b> para aceptar un ajuste; queda en el historial con el dato que lo motivó.</li>
+<li><b>Gráficas:</b> rendimiento y carga (100 = tu inicio), kilómetros por sesión, peso, cintura y cada ejercicio ● (carga, reps, distancia o RIR).</li>
+</ul></section>
+
+<section class="panel guide"><h2>Coach IA y tus datos</h2><ul>
+<li>El Coach IA lee tu perfil, rutina, últimas sesiones, check-ins y reglas activas. Solo funciona dentro de claude.ai; la primera vez te pedirá permiso.</li>
+<li>Sus respuestas son orientación: tú decides qué cambiar en la rutina.</li>
+<li><b>Respaldo:</b> Perfil → <span class="kbd">Copiar respaldo (JSON)</span>. Guárdalo en tu repo <b>privado</b>, nunca en el público.</li>
+<li><b>Tema:</b> el switch de arriba cambia entre claro (azul) y oscuro (naranja) y recuerda tu elección.</li>
+</ul></section>`;
 
 /* ---------- COACH IA ---------- */
 const SYS=`Eres el Fitness & Training Coach de Daniel: disciplinado, empático, profesional y basado en evidencia. Responde en español, claro y conciso, con estructura (calentamiento, bloques principales, enfriamiento, movilidad) cuando aplique y explica el porqué en una línea por recomendación. Prioriza progresión, prevención de lesiones y constancia; integra hábitos y psicología deportiva cuando ayude. Reglas de seguridad: nunca propongas déficits mayores a 25%, ayunos prolongados ni suplementos de riesgo; si hay dolor agudo, mareo o una condición médica, recomienda consultar a un médico y no subas cargas. Si te faltan datos (cargas, RM, tiempos), dilo y pide exactamente cuáles.`;
