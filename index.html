@@ -440,7 +440,7 @@ document.addEventListener("input",e=>{
   if(el.dataset.mi){menuInput(el)}
   if(el.dataset.set){todayInput(el)}
 });
-document.addEventListener("change",e=>{const el=e.target;if(el.dataset.bind&&el.tagName==="SELECT"){if(tab==="nutricion"||tab==="perfil")refreshCalc()}});
+document.addEventListener("change",e=>{const el=e.target;if(el.dataset.ri&&(el.type==="checkbox"||el.tagName==="SELECT"))routineInput(el);if(el.dataset.bind&&el.tagName==="SELECT"){if(tab==="nutricion"||tab==="perfil")refreshCalc()}});
 
 /* ======================= VIEWS ======================= */
 const VIEWS={}, AFTER={};
@@ -531,7 +531,8 @@ function routineInput(el){
   else if(ds.ri==="day")r.days[+ds.di][ds.k]=v;
   else if(ds.ri==="block")r.days[+ds.di].blocks[+ds.bi].title=v;
   else if(ds.ri==="goal")r.goals[+ds.gi][ds.k]=v;
-  else if(ds.ri==="item"){const it=ds.daily?r.daily[+ds.ii]:r.days[+ds.di].blocks[+ds.bi].items[+ds.ii];it[ds.k]=v}
+  else if(ds.ri==="item"){const it=ds.daily?r.daily[+ds.ii]:r.days[+ds.di].blocks[+ds.bi].items[+ds.ii];if(it[ds.k]===v&&el.type!=="text")return;it[ds.k]=v;
+    if(ds.k==="track"&&!ds.daily){const day=r.days[+ds.di],pill=document.querySelector(`details.day[data-day="${day.id}"] .pill`);if(pill)pill.textContent=day.blocks.reduce((n,b)=>n+b.items.filter(i=>i.track).length,0)+" ●";toast(v?"Se registrará en Hoy":"Ya no se registra en Hoy")}}
   saveDoc("routine");
 }
 document.addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches("details.day")){d.open?openDays.add(d.dataset.day):openDays.delete(d.dataset.day)}},true);
@@ -573,6 +574,8 @@ VIEWS.hoy=()=>{
   if(!draft||draft.dayId!==todayDay)newDraft();
   const d=S.routine.days.find(x=>x.id===todayDay)||S.routine.days[0];
   const tracked=[],other=[];d.blocks.forEach(b=>b.items.forEach(it=>(it.track?tracked:other).push({...it,block:b.title})));
+  /* exercises marked with ● after the draft was created get their set rows now */
+  let grew=false;tracked.forEach(it=>{if(!draft.entries[it.id]||!draft.entries[it.id].length){const n=Math.max(1,Math.min(10,parseInt(it.sets)||3));draft.entries[it.id]=Array.from({length:n},()=>({kg:"",reps:"",rir:"",dist:""}));grew=true}});if(grew)saveDraft();
   const flag=redFlag();
   return `<section class="panel"><div class="row" style="justify-content:space-between"><h2>${esc(d.title)}</h2><span class="pill">${draft.date}</span></div>
   <label class="f">Sesión<select id="today-day">${S.routine.days.map((x,i)=>`<option value="${x.id}" ${x.id===d.id?"selected":""}>Día ${i+1} · ${esc(x.title)}</option>`).join("")}</select></label>
