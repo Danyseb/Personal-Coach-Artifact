@@ -410,9 +410,9 @@ function suggestions(){
 /* ======================= tabs ======================= */
 const TABS=[["hoy","Hoy"],["rutina","Rutina"],["nutricion","Nutrición"],["progreso","Progreso"],["perfil","Perfil"],["coach","Coach IA"],["guia","Guía"]];
 let tab="hoy"; try{const t=localStorage.getItem(LS+"-tab");if(t&&TABS.some(x=>x[0]===t))tab=t}catch(e){}
-if(TABS.some(x=>"#"+x[0]===location.hash)) tab=location.hash.slice(1);
+try{if(TABS.some(x=>"#"+x[0]===location.hash)) tab=location.hash.slice(1)}catch(_){}
 function renderTabs(){$("#tabs").innerHTML=TABS.map(([k,l])=>`<button role="tab" id="tab-${k}" aria-selected="${k===tab}" data-tab="${k}">${l}</button>`).join("")}
-$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;tab=b.dataset.tab;try{localStorage.setItem(LS+"-tab",tab)}catch(_){}history.replaceState(null,"","#"+tab);render();window.scrollTo(0,0)});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;tab=b.dataset.tab;try{localStorage.setItem(LS+"-tab",tab)}catch(_){}try{history.replaceState(null,"","#"+tab)}catch(_){}render();window.scrollTo(0,0)});
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(TABS.some(x=>x[0]===h)){tab=h;render()}});
 function render(){renderTabs();const m=$("#main");m.innerHTML=VIEWS[tab]();if(AFTER[tab])AFTER[tab]()}
 
