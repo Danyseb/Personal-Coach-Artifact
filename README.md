@@ -4,7 +4,7 @@ App personal de entrenamiento y nutrición de Daniel, construida como artefacto 
 
 ## Qué hace
 - **Hoy:** registro de series (kg, reps, RIR y distancia) con lo que hiciste la última vez y una sugerencia de progresión.
-- **Rutina:** programa *Hybrid Athlete & Calisthenics v2.0*, 100% editable (series, reps, carga, RIR, distancia, descanso).
+- **Rutina:** programa *Hybrid Athlete & Calisthenics v2.0* organizado en Calentamiento, Entrenamiento y Enfriamiento; 100% editable.
 - **Nutrición:** calorías y macros con Mifflin-St Jeor, calculados en código; menú del día con comparación ±5%.
 - **Progreso:** check-in semanal, ajustes automáticos por reglas, gráficas de rendimiento y carga, kilómetros por sesión, peso y carga por ejercicio.
 - **Perfil** y **Coach IA** (este último solo funciona dentro de claude.ai).
@@ -14,11 +14,11 @@ App personal de entrenamiento y nutrición de Daniel, construida como artefacto 
 
 **Tu semana en 4 pasos**
 1. **Una vez:** llena *Perfil* (edad, estatura, peso, objetivo, equipo, lesiones, alimentos).
-2. **Cada entreno:** abre *Hoy*, registra cada serie (kg extra, reps, RIR y distancia si aplica) y toca **Guardar sesión**.
+2. **Cada entreno:** abre *Hoy*, palomea el calentamiento, registra cada serie del entrenamiento (reps, kg, distancia y RIR), palomea el enfriamiento y toca **Guardar sesión**.
 3. **Cada semana:** haz el check-in en *Progreso* y aplica los ajustes sugeridos.
 4. **Cuando quieras:** pregúntale al *Coach IA* (solo dentro de claude.ai).
 
-**Campos de cada ejercicio (Rutina):** series · reps · carga · RIR objetivo · distancia + unidad (m/km) · descanso · ● (se registra en *Hoy* y entra en gráficas y reglas).
+**Estructura de cada día (Rutina):** Calentamiento (checklist) · Entrenamiento en bloques (series, reps, carga, distancia + unidad, RIR objetivo, descanso; se registra serie por serie en *Hoy*) · Enfriamiento (checklist). Se edita con **Editar día**.
 
 **Progresión**
 - Fuerza: doble progresión. Tope del rango en todas las series con RIR ≥ objetivo → +1.25–2.5 kg.
@@ -27,7 +27,7 @@ App personal de entrenamiento y nutrición de Daniel, construida como artefacto 
 
 **Reglas automáticas del check-in**
 - Peso sin moverse 2 semanas con adherencia ≥ 80% → ±150 kcal.
-- Energía o sueño < 5 → −20% de series en ejercicios ●.
+- Energía o sueño < 5 → −20% de series del entrenamiento.
 - 3 sesiones sin superar tu mejor serie → cambia esquema o ejercicio.
 - Notas con "dolor agudo" o "mareo" → aviso médico y pausa de subidas de carga.
 

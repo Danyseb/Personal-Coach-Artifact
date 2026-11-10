@@ -106,31 +106,44 @@ details.day>summary::-webkit-details-marker{display:none}
 .daytitle{font-weight:600;min-width:0;flex:1}
 .daytitle small{display:block;color:var(--muted);font-weight:400;font-size:13px}
 .daybody{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
-.block{border-top:1px dashed var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
 .block-head{display:flex;gap:8px;align-items:center}
-.block-head input{font-family:var(--f-display);font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:.05em;background:transparent;border-color:transparent;padding:6px 4px}
-.item{display:grid;grid-template-columns:minmax(0,2.2fr) 50px 66px 62px 50px 58px 58px 62px 34px 34px;gap:6px;align-items:center}
-.item input,.item select{padding:8px 6px;font-size:15px}
-.item select{padding-inline:4px}
-.item .c{display:flex;flex-direction:column;gap:2px;min-width:0}
-.item .c>span{display:none;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.item-h{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.iconbtn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:16px;line-height:1}
-.track{display:flex;justify-content:center;align-items:center}
-@media (max-width:720px){
-  .item{grid-template-columns:repeat(4,minmax(0,1fr));row-gap:8px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-  .item .nm{grid-column:1/4}
-  .item .c>span{display:block}
-  .item .trk{flex-direction:column;gap:2px}
-  .item .del{grid-column:4;grid-row:1;justify-self:end}
-  .item-h{display:none}
-}
+.block-head input{font-family:var(--f-display);font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:.05em;background:transparent;border-color:transparent;padding:6px 4px;flex:1;min-width:0}
+.iconbtn{width:34px;height:34px;flex:0 0 auto;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:16px;line-height:1}
+.iconbtn[disabled]{opacity:.35;cursor:default}
+.iconbtn.armed{width:auto;padding:0 10px;color:var(--bad);border-color:var(--bad);font-size:13px}
+/* routine sections: read view */
+.sec{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line)}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.sec-t{font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.sec .m,.sec-h .m,.plain .m{font-family:var(--f-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.plain li{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.plain li small,.rx-n small{display:block;font-weight:400;font-size:12.5px;color:var(--muted)}
+.blk-t{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.rx{display:flex;justify-content:space-between;gap:8px 12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.rx-n{font-weight:600;min-width:0;flex:1 1 170px}
+.rx-c{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:6px;background:var(--sunk);color:var(--fg);white-space:nowrap}
+.chip.a{background:var(--accent-soft);color:var(--accent);font-weight:500}
+/* routine sections: edit view */
+.wrow{display:grid;grid-template-columns:minmax(0,1fr) 130px auto;gap:6px;align-items:center}
+.wrow input,.tcard input,.tcard select{padding:8px;font-size:15px}
+.mv{display:flex;gap:4px}
+.blk-edit{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px dashed var(--accent-mid);border-radius:8px}
+.tcard{border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.tcard .top{display:flex;gap:6px;align-items:center}
+.tcard .top>input{flex:1;min-width:0;font-weight:600}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:6px}
+.fields label{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:0}
+@media (max-width:520px){.wrow{grid-template-columns:minmax(0,1fr) 100px}.wrow .mv{grid-column:1/-1;justify-content:flex-end}}
+.hoy-sec{padding:4px 2px 0}
+.hoy-blk{margin:6px 2px -6px}
 /* today */
 .ex{border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
 .ex-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .ex-name{font-family:var(--f-display);font-weight:700;font-size:21px;text-transform:uppercase;letter-spacing:.02em;line-height:1.1}
 .ex-meta{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
-.sets{display:grid;grid-template-columns:28px repeat(3,minmax(0,1fr));gap:6px;align-items:center}
+.sets{display:grid;grid-template-columns:28px repeat(4,minmax(0,1fr));gap:6px;align-items:center}
 .sets .h{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
 .sets .n{font-family:var(--f-display);font-weight:700;font-size:20px;text-align:center}
 .sets input{text-align:center;font-size:18px;padding:12px 4px}
@@ -185,21 +198,43 @@ td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabula
 <script>
 /* ======================= defaults ======================= */
 const uid=()=>Math.random().toString(36).slice(2,9);
-const I=(name,sets,reps,o={})=>({id:uid(),name,sets:String(sets),reps:String(reps),load:o.load||"",rir:o.rir||"",dist:o.dist||"",du:o.du||"",rest:o.rest||"",track:!!o.track,notes:o.notes||""});
-/* distance defaults from the program, used for new routines and to migrate saved ones */
+/* Routine model v2: every day = warmup (checklist) + training blocks (logged set by set) + cooldown (checklist) */
+const I=(name,sets,reps,o={})=>({id:uid(),name,sets:String(sets),reps:String(reps),load:o.load||"",rir:o.rir||"",dist:o.dist||"",du:o.du||"",rest:o.rest||"",notes:o.notes||""});
+const W=(name,amount="",notes="")=>({id:uid(),name,amount,notes});
+/* distance defaults from the program */
 const DIST_DEFAULTS={"Light Jog":["400","m"],"Long Run":["9","km"],"Run":["200","m"],"Farmer Carry":["40","m"],"Sled Push (si hay gym)":["","m"]};
+const WARM_RE=/warm|calent/i, COOL_RE=/cool|stretch|mobility|movilidad|enfri|estir|cierre|recuper/i, COOL_ITEM_RE=/recovery walk/i;
+function toW(it){
+  const reps=String(it.reps??"").trim(),sets=String(it.sets??"").trim();
+  let a=(!reps||reps==="—")?"":reps;
+  if(a&&/^\d+$/.test(sets)&&+sets>1)a=`${sets} × ${a}`;
+  if(!a&&it.dist)a=`${it.dist} ${it.du||""}`.trim();
+  return {id:it.id||uid(),name:it.name,amount:a,notes:it.notes||""};
+}
+function toT(it){
+  const t={id:it.id||uid(),name:it.name,sets:String(it.sets??""),reps:String(it.reps??""),load:it.load||"",rir:it.rir??"",dist:it.dist??"",du:it.du??"",rest:it.rest||"",notes:it.notes||""};
+  const d=DIST_DEFAULTS[t.name];
+  if(d&&!t.du&&!t.dist){t.dist=d[0];t.du=d[1];if(t.reps.replace(/\s/g,"")===d[0]+d[1])t.reps="—"}
+  return t;
+}
+/* converts the old one-list-per-block routine (and the removed daily practice) into sections; returns true if it changed anything */
 function migrateRoutine(r){
-  let changed=false;
-  const fix=it=>{
-    for(const k of ["rir","dist","du"]) if(it[k]===undefined){it[k]="";changed=true}
-    const d=DIST_DEFAULTS[it.name];
-    if(d&&!it.du&&!it.dist){it.dist=d[0];it.du=d[1];if(String(it.reps).replace(/\s/g,"")===d[0]+d[1])it.reps="—";changed=true}
-  };
-  (r.days||[]).forEach(d=>d.blocks.forEach(b=>b.items.forEach(fix)));(r.daily||[]).forEach(fix);
-  return changed;
+  if(r.schema===2){let ch=false;(r.days||[]).forEach(d=>{for(const k of ["warmup","cooldown","blocks"]) if(!Array.isArray(d[k])){d[k]=[];ch=true}});return ch}
+  r.days=(r.days||[]).map(d=>{
+    const nd={id:d.id,title:d.title,focus:d.focus||"",warmup:[],blocks:[],cooldown:[]};
+    (d.blocks||[]).forEach(b=>{
+      if(WARM_RE.test(b.title)) nd.warmup.push(...b.items.map(toW));
+      else if(COOL_RE.test(b.title)) nd.cooldown.push(...b.items.map(toW));
+      else{const keep=[];b.items.forEach(it=>COOL_ITEM_RE.test(it.name)?nd.cooldown.unshift(toW(it)):keep.push(toT(it)));if(keep.length)nd.blocks.push({id:b.id||uid(),title:b.title,items:keep})}
+    });
+    return nd;
+  });
+  delete r.daily; r.schema=2; r.goals=r.goals||[];
+  return true;
 }
 const B=(title,items)=>({id:uid(),title,items});
-const BASE_ROUTINE=()=>({
+const BASE_ROUTINE=()=>{const r=BASE_V1();migrateRoutine(r);return r};
+const BASE_V1=()=>({
   name:"Hybrid Athlete & Calisthenics v2.0",
   days:[
     {id:"d1",title:"Vertical Push & Pull Strength",focus:"Handstand focus",blocks:[
@@ -337,14 +372,14 @@ function nutrition(){
 }
 
 /* ======================= training math ======================= */
-function trackedExercises(){const s=new Set();S.routine.days.forEach(d=>d.blocks.forEach(b=>b.items.forEach(i=>{if(i.track)s.add(i.name)})));return [...s]}
+function trackedExercises(){const s=new Set();S.routine.days.forEach(d=>d.blocks.forEach(b=>b.items.forEach(i=>s.add(i.name))));return [...s]}
 /* distance helpers: everything is compared in metres, shown in the unit it was logged in */
 const toM=(d,u)=>d==null||d===""?null:(num(d)||0)*(u==="km"?1000:1);
 const fmtDist=(m,u)=>m==null?"":u==="km"?`${r1(m/1000)} km`:`${r0(m)} m`;
 function setLabel(s){
   const parts=[];
-  if(num(s.kg)||(!s.du)) parts.push(`${s.kg||0}kg`);
-  if(s.reps!=null&&s.reps!=="") parts.push(`×${s.reps}`);
+  if(num(s.kg)) parts.push(`${s.kg}kg`);
+  if(s.reps!=null&&s.reps!=="") parts.push(parts.length?`×${s.reps}`:`${s.reps}`);
   if(s.du&&s.dist!=null&&s.dist!=="") parts.push(`${parts.length?" · ":""}${s.dist}${s.du}`);
   if(s.rir!=null&&s.rir!=="") parts.push(` @${s.rir}`);
   return parts.join("")||"–";
@@ -499,40 +534,75 @@ function menuInput(el){const m=S.menu.meals[+el.dataset.mi];if(el.dataset.fi===u
 AFTER.nutricion=()=>{refreshCalc();$("#menu").innerHTML=menuHTML();$("#add-meal").onclick=()=>{S.menu.meals.push({id:uid(),name:"Comida",items:[]});saveDoc("menu");$("#menu").innerHTML=menuHTML()}};
 
 /* ---------- RUTINA ---------- */
-let openDays=new Set(["d1"]);
+let openDays=new Set(["d1"]), editDays=new Set();
+function secList(sec,di,bi){const d=S.routine.days[di];if(!d)return null;return sec==="w"?d.warmup:sec==="c"?d.cooldown:sec==="t"?(d.blocks[bi]||{}).items:sec==="b"?d.blocks:null}
+function trainCount(d){return d.blocks.reduce((n,b)=>n+b.items.length,0)}
+function rxChips(it){
+  const c=[],reps=String(it.reps||"").trim(),noReps=!reps||reps==="—";
+  const amt=noReps&&it.dist?`${it.dist} ${it.du}`:(reps||"—");
+  c.push(`<span class="chip a">${esc(it.sets||"—")} × ${esc(amt)}</span>`);
+  if(it.dist&&!noReps)c.push(`<span class="chip">${esc(it.dist)} ${esc(it.du)}</span>`);
+  if(it.load)c.push(`<span class="chip">${esc(/^\d+([.,]\d+)?$/.test(String(it.load).trim())?"+"+it.load+" kg":it.load)}</span>`);
+  if(it.rir!==""&&it.rir!=null)c.push(`<span class="chip">RIR ${esc(it.rir)}</span>`);
+  if(it.rest)c.push(`<span class="chip">desc ${esc(it.rest)}</span>`);
+  return c.join("");
+}
+function checkSecRead(title,list){
+  return `<div class="sec"><div class="sec-h"><span class="sec-t">${title}</span><span class="m">${list.length}</span></div>
+  ${list.length?`<ul class="plain">${list.map(w=>`<li><span>${esc(w.name)}${w.notes?`<small>${esc(w.notes)}</small>`:""}</span><span class="m">${esc(w.amount||"")}</span></li>`).join("")}</ul>`:`<p class="lead" style="font-size:13px">Sin ejercicios.</p>`}</div>`;
+}
+function dayRead(d){
+  return checkSecRead("Calentamiento",d.warmup)+
+  `<div class="sec"><div class="sec-h"><span class="sec-t">Entrenamiento</span><span class="m">${trainCount(d)}</span></div>
+  ${d.blocks.length?d.blocks.map(b=>`<div class="blk-t">${esc(b.title)}</div>${b.items.map(it=>`<div class="rx"><div class="rx-n">${esc(it.name)}${it.notes?`<small>${esc(it.notes)}</small>`:""}</div><div class="rx-c">${rxChips(it)}</div></div>`).join("")}`).join(""):`<p class="lead" style="font-size:13px">Sin ejercicios de entrenamiento.</p>`}</div>`+
+  checkSecRead("Enfriamiento",d.cooldown);
+}
+const mvBtns=(sec,di,bi,ii,len)=>{const a=`data-sec="${sec}" data-di="${di}" data-bi="${bi}" data-ii="${ii}"`;
+  return `<span class="mv"><button class="iconbtn" data-act="up" ${a} aria-label="Subir" ${ii===0?"disabled":""}>↑</button><button class="iconbtn" data-act="down" ${a} aria-label="Bajar" ${ii===len-1?"disabled":""}>↓</button><button class="iconbtn" data-act="del" ${a} aria-label="Borrar">×</button></span>`};
+function checkSecEdit(sec,d,di){
+  const list=sec==="w"?d.warmup:d.cooldown;
+  return `${list.map((w,ii)=>{const a=`data-ri="${sec}" data-di="${di}" data-ii="${ii}"`;return `<div class="wrow"><input id="${sec}-${w.id}-n" ${a} data-k="name" value="${esc(w.name)}" aria-label="Ejercicio"><input id="${sec}-${w.id}-a" ${a} data-k="amount" value="${esc(w.amount||"")}" placeholder="3 min · 2×30" aria-label="Cantidad o tiempo">${mvBtns(sec,di,0,ii,list.length)}</div>`}).join("")}
+  <div><button class="btn small ghost" data-act="add" data-sec="${sec}" data-di="${di}" data-bi="0">+ Ejercicio</button></div>`;
+}
+function trainEdit(it,di,bi,ii,len){
+  const a=`data-ri="t" data-di="${di}" data-bi="${bi}" data-ii="${ii}"`;
+  const f=(k,lab,ph,extra="")=>`<label>${lab}<input id="t-${it.id}-${k}" ${a} data-k="${k}" value="${esc(it[k]??"")}" placeholder="${ph}" ${extra}></label>`;
+  return `<div class="tcard"><div class="top"><input id="t-${it.id}-name" ${a} data-k="name" value="${esc(it.name)}" aria-label="Ejercicio">${mvBtns("t",di,bi,ii,len)}</div>
+  <div class="fields">${f("sets","Series","—",'inputmode="numeric"')}${f("reps","Reps / s","—")}${f("load","Carga kg","—")}${f("dist","Distancia","—",'inputmode="decimal"')}<label>Unidad<select id="t-${it.id}-du" ${a} data-k="du"><option value="" ${!it.du?"selected":""}>—</option><option value="m" ${it.du==="m"?"selected":""}>m</option><option value="km" ${it.du==="km"?"selected":""}>km</option></select></label>${f("rir","RIR obj.","—",'inputmode="decimal"')}${f("rest","Descanso","—")}</div>
+  <input id="t-${it.id}-notes" ${a} data-k="notes" value="${esc(it.notes||"")}" placeholder="Notas (opcional)" aria-label="Notas"></div>`;
+}
+function dayEdit(d,di){
+  return `<div class="grid wide"><label class="f">Título<input id="d-${d.id}-t" data-ri="day" data-di="${di}" data-k="title" value="${esc(d.title)}"></label><label class="f">Enfoque<input id="d-${d.id}-f" data-ri="day" data-di="${di}" data-k="focus" value="${esc(d.focus)}"></label></div>
+  <div class="sec"><div class="sec-h"><span class="sec-t">Calentamiento</span><span class="m">checklist</span></div>${checkSecEdit("w",d,di)}</div>
+  <div class="sec"><div class="sec-h"><span class="sec-t">Entrenamiento</span><span class="m">se registra serie por serie</span></div>
+  ${d.blocks.map((b,bi)=>`<div class="blk-edit"><div class="block-head"><input id="b-${b.id}" data-ri="block" data-di="${di}" data-bi="${bi}" value="${esc(b.title)}" aria-label="Nombre del bloque">${mvBtns("b",di,0,bi,d.blocks.length)}</div>
+    ${b.items.map((it,ii)=>trainEdit(it,di,bi,ii,b.items.length)).join("")}
+    <div><button class="btn small ghost" data-act="add" data-sec="t" data-di="${di}" data-bi="${bi}">+ Ejercicio</button></div></div>`).join("")}
+  <div><button class="btn small" data-act="add-block" data-di="${di}">+ Bloque de entrenamiento</button></div></div>
+  <div class="sec"><div class="sec-h"><span class="sec-t">Enfriamiento</span><span class="m">checklist</span></div>${checkSecEdit("c",d,di)}</div>`;
+}
 VIEWS.rutina=()=>{
   const r=S.routine;
   return `<section class="panel"><h2>${esc(r.name)}</h2>
-  <p class="lead">Todo es editable. Marca <b>●</b> en los ejercicios que quieres registrar con peso, reps y RIR en <b>Hoy</b>; esos son los que el Coach usa para la progresión.</p>
+  <p class="lead">Cada día tiene tres secciones. <b>Calentamiento</b> y <b>Enfriamiento</b> se palomean en Hoy. Todo lo de <b>Entrenamiento</b> se registra serie por serie con reps, kg, distancia y RIR. Toca <b>Editar día</b> para agregar, quitar, cambiar u ordenar ejercicios.</p>
   ${routineSaved||dbState!=="cloud"?"":`<div class="note warn">Esta es la rutina base precargada. Se guarda en cuanto edites algo.</div>`}
   <label class="f">Nombre del programa<input id="r-name" data-ri="name" value="${esc(r.name)}"></label></section>
-  ${r.days.map((d,di)=>`<details class="day" data-day="${d.id}" ${openDays.has(d.id)?"open":""}><summary><span class="daynum">${di+1}</span><span class="daytitle">${esc(d.title)}<small>${esc(d.focus)}</small></span><span class="pill">${d.blocks.reduce((n,b)=>n+b.items.filter(i=>i.track).length,0)} ●</span></summary>
-  <div class="daybody"><div class="grid wide"><label class="f">Título<input id="d-${d.id}-t" data-ri="day" data-di="${di}" data-k="title" value="${esc(d.title)}"></label><label class="f">Enfoque<input id="d-${d.id}-f" data-ri="day" data-di="${di}" data-k="focus" value="${esc(d.focus)}"></label></div>
-  ${d.blocks.map((b,bi)=>`<div class="block"><div class="block-head"><input id="b-${b.id}" data-ri="block" data-di="${di}" data-bi="${bi}" value="${esc(b.title)}" aria-label="Nombre del bloque"><button class="iconbtn" data-act="del-block" data-di="${di}" data-bi="${bi}" aria-label="Borrar bloque">×</button></div>
-    <div class="item item-h"><span class="nm">Ejercicio</span><span>Series</span><span>Reps</span><span>Carga</span><span>RIR</span><span>Dist.</span><span>Unidad</span><span>Desc.</span><span class="trk">●</span><span></span></div>
-    ${b.items.map((it,ii)=>itemRow(it,`data-di="${di}" data-bi="${bi}" data-ii="${ii}"`)).join("")}
-    <div><button class="btn small ghost" data-act="add-item" data-di="${di}" data-bi="${bi}">+ Ejercicio</button></div></div>`).join("")}
-  <div class="row"><button class="btn small" data-act="add-block" data-di="${di}">+ Bloque</button></div></div></details>`).join("")}
-  <section class="panel"><h2>Práctica diaria de skill</h2><p class="lead">10–15 min todos los días, incluso en descanso. Calidad, no fatiga.</p>
-  ${r.daily.map((it,ii)=>itemRow(it,`data-daily="1" data-ii="${ii}"`,true)).join("")}<div><button class="btn small ghost" data-act="add-daily">+ Ejercicio</button></div></section>
+  ${r.days.map((d,di)=>{const ed=editDays.has(d.id);return `<details class="day" data-day="${d.id}" ${openDays.has(d.id)||ed?"open":""}><summary><span class="daynum">${di+1}</span><span class="daytitle">${esc(d.title)}<small>${esc(d.focus)}</small></span><span class="pill">${trainCount(d)} ej.</span></summary>
+  <div class="daybody"><div class="row" style="justify-content:flex-end"><button class="btn small ${ed?"primary":""}" data-act="edit-day" data-day="${d.id}">${ed?"Listo":"Editar día"}</button></div>
+  ${ed?dayEdit(d,di):dayRead(d)}</div></details>`}).join("")}
   <section class="panel"><h2>Metas a 12 meses</h2><div class="goals">${r.goals.map((g,gi)=>`<div class="goal"><input type="checkbox" id="g-${g.id}-d" data-ri="goal" data-gi="${gi}" data-k="done" ${g.done?"checked":""} aria-label="Cumplida"><input class="ga" id="g-${g.id}-a" data-ri="goal" data-gi="${gi}" data-k="area" value="${esc(g.area)}"><input id="g-${g.id}-t" data-ri="goal" data-gi="${gi}" data-k="text" value="${esc(g.text)}"><button class="iconbtn" data-act="del-goal" data-gi="${gi}" aria-label="Borrar meta">×</button></div>`).join("")}</div>
   <div><button class="btn small ghost" data-act="add-goal">+ Meta</button></div>
   <label class="f">Pregunta de la semana<input id="r-mind" data-ri="mindset" value="${esc(r.mindset)}"></label></section>
   <section class="panel"><div class="confirm" id="reset-box"><button class="btn small danger" data-act="reset-ask">Restaurar rutina base</button></div></section>`;
 };
-function itemRow(it,attrs,noDel){
-  const c=(k,lab,ph,extra="")=>`<label class="c"><span>${lab}</span><input id="i-${it.id}-${k}" data-ri="item" ${attrs} data-k="${k}" value="${esc(it[k]??"")}" placeholder="${ph}" aria-label="${lab}" ${extra}></label>`;
-  return `<div class="item"><input class="nm" id="i-${it.id}-n" data-ri="item" ${attrs} data-k="name" value="${esc(it.name)}" aria-label="Ejercicio">${c("sets","Series","—")}${c("reps","Reps","—")}${c("load","Carga","kg")}${c("rir","RIR","—",'inputmode="decimal"')}${c("dist","Dist.","—",'inputmode="decimal"')}<label class="c"><span>Unidad</span><select id="i-${it.id}-du" data-ri="item" ${attrs} data-k="du" aria-label="Unidad de distancia"><option value="" ${!it.du?"selected":""}>—</option><option value="m" ${it.du==="m"?"selected":""}>m</option><option value="km" ${it.du==="km"?"selected":""}>km</option></select></label>${c("rest","Desc.","—")}<label class="track trk c"><span>●</span><input type="checkbox" id="i-${it.id}-t" data-ri="item" ${attrs} data-k="track" ${it.track?"checked":""} aria-label="Registrar en Hoy"></label>${noDel?`<button class="iconbtn del" data-act="del-daily" ${attrs} aria-label="Borrar">×</button>`:`<button class="iconbtn del" data-act="del-item" ${attrs} aria-label="Borrar">×</button>`}</div>`;
-}
 function routineInput(el){
   const r=S.routine,ds=el.dataset,v=el.type==="checkbox"?el.checked:el.value;
   if(ds.ri==="name")r.name=v;
   else if(ds.ri==="mindset")r.mindset=v;
+  else if(ds.ri==="goal")r.goals[+ds.gi][ds.k]=v;
   else if(ds.ri==="day")r.days[+ds.di][ds.k]=v;
   else if(ds.ri==="block")r.days[+ds.di].blocks[+ds.bi].title=v;
-  else if(ds.ri==="goal")r.goals[+ds.gi][ds.k]=v;
-  else if(ds.ri==="item"){const it=ds.daily?r.daily[+ds.ii]:r.days[+ds.di].blocks[+ds.bi].items[+ds.ii];if(it[ds.k]===v&&el.type!=="text")return;it[ds.k]=v;
-    if(ds.k==="track"&&!ds.daily){const day=r.days[+ds.di],pill=document.querySelector(`details.day[data-day="${day.id}"] .pill`);if(pill)pill.textContent=day.blocks.reduce((n,b)=>n+b.items.filter(i=>i.track).length,0)+" ●";toast(v?"Se registrará en Hoy":"Ya no se registra en Hoy")}}
+  else{const arr=secList(ds.ri,+ds.di,+ds.bi);if(!arr||!arr[+ds.ii])return;if(arr[+ds.ii][ds.k]===v)return;arr[+ds.ii][ds.k]=v}
   saveDoc("routine");
 }
 document.addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches("details.day")){d.open?openDays.add(d.dataset.day):openDays.delete(d.dataset.day)}},true);
@@ -541,12 +611,18 @@ document.addEventListener("toggle",e=>{const d=e.target;if(d.matches&&d.matches(
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-act]");if(!b)return;const ds=b.dataset,r=S.routine;
   const act=ds.act;
-  if(act==="add-item"){r.days[+ds.di].blocks[+ds.bi].items.push(I("Nuevo ejercicio","3","8-10"));saveDoc("routine");render()}
-  if(act==="del-item"){r.days[+ds.di].blocks[+ds.bi].items.splice(+ds.ii,1);saveDoc("routine");render()}
-  if(act==="add-block"){r.days[+ds.di].blocks.push(B("Nuevo bloque",[]));saveDoc("routine");render()}
-  if(act==="del-block"){r.days[+ds.di].blocks.splice(+ds.bi,1);saveDoc("routine");render()}
-  if(act==="add-daily"){r.daily.push(I("Nuevo","1","—"));saveDoc("routine");render()}
-  if(act==="del-daily"){r.daily.splice(+ds.ii,1);saveDoc("routine");render()}
+  if(act==="edit-day"){e.preventDefault();editDays.has(ds.day)?editDays.delete(ds.day):editDays.add(ds.day);openDays.add(ds.day);render();if(!editDays.has(ds.day))toast("Cambios guardados")}
+  if(act==="add"){const arr=secList(ds.sec,+ds.di,+ds.bi);if(!arr)return;arr.push(ds.sec==="t"?I("Nuevo ejercicio","3","8-10"):W("Nuevo ejercicio",""));saveDoc("routine");render();
+    const last=arr[arr.length-1],inp=document.getElementById((ds.sec==="t"?"t-"+last.id+"-name":ds.sec+"-"+last.id+"-n"));if(inp){inp.focus();inp.select()}}
+  if(act==="add-block"){r.days[+ds.di].blocks.push(B("Nuevo bloque",[I("Nuevo ejercicio","3","8-10")]));saveDoc("routine");render()}
+  if(act==="del"||act==="up"||act==="down"){
+    const arr=secList(ds.sec,+ds.di,+ds.bi),i=+ds.ii;if(!arr||!arr[i])return;
+    if(act==="del"){
+      if(ds.sec==="b"&&arr[i].items.length&&!b.classList.contains("armed")){b.classList.add("armed");b.textContent="¿Borrar bloque?";return}
+      arr.splice(i,1);
+    }else{const j=act==="up"?i-1:i+1;if(j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]]}
+    saveDoc("routine");render();
+  }
   if(act==="add-goal"){r.goals.push({id:uid(),area:"",text:"",done:false});saveDoc("routine");render()}
   if(act==="del-goal"){r.goals.splice(+ds.gi,1);saveDoc("routine");render()}
   if(act==="reset-ask"){$("#reset-box").innerHTML=`<span>Esto reemplaza tu rutina actual por la base. Tus registros no se borran.</span><button class="btn small danger" data-act="reset-do">Sí, restaurar</button><button class="btn small" data-act="reset-no">Cancelar</button>`}
@@ -563,56 +639,67 @@ document.addEventListener("click",e=>{
 /* ---------- HOY ---------- */
 const WEEKMAP=[6,0,1,2,3,4,5]; // Sun..Sat -> Day index
 let todayDay=null, draft=null;
+const emptySets=it=>Array.from({length:Math.max(1,Math.min(10,parseInt(it.sets)||3))},()=>({reps:"",kg:"",dist:"",rir:""}));
 function newDraft(){const d=S.routine.days.find(x=>x.id===todayDay)||S.routine.days[0];
   draft={dayId:d.id,date:today(),entries:{},notes:"",done:{}};
-  d.blocks.forEach(b=>b.items.forEach(it=>{if(it.track){const n=Math.max(1,Math.min(10,parseInt(it.sets)||3));draft.entries[it.id]=Array.from({length:n},()=>({kg:"",reps:"",rir:"",dist:""}))}}));
   try{const sv=JSON.parse(localStorage.getItem(LS+"-draft")||"null");if(sv&&sv.dayId===d.id&&sv.date===draft.date)draft=sv}catch(e){}
 }
 function saveDraft(){try{localStorage.setItem(LS+"-draft",JSON.stringify(draft))}catch(e){}}
+function checkSecToday(title,list){
+  if(!list.length)return "";
+  const n=list.filter(w=>draft.done[w.id]).length;
+  return `<section class="panel"><div class="sec-h"><span class="sec-t">${title}</span><span class="m cnt">${n}/${list.length}</span></div><div class="checklist">${list.map(w=>`<label><input type="checkbox" id="c-${w.id}" data-done="${w.id}" ${draft.done[w.id]?"checked":""}><span>${esc(w.name)}${w.notes?`<br><span class="m">${esc(w.notes)}</span>`:""}</span><span class="m">${esc(w.amount||"")}</span></label>`).join("")}</div></section>`;
+}
+function exCard(it){
+  const ss=sessionsFor(it.name),last=ss[ss.length-1],h=progressionHint(it),rows=draft.entries[it.id]||[];
+  const cols=["reps","kg","dist","rir"],head={reps:"Reps / s",kg:"Kg",dist:it.du||"m",rir:"RIR"};
+  const ph=(si,k)=>{const l=last&&last.sets[si];if(l&&l[k]!=null&&l[k]!==""&&!(k==="kg"&&!l[k]))return l[k];if(k==="rir"&&it.rir)return it.rir;if(k==="dist"&&it.dist)return it.dist;return ""};
+  return `<div class="ex"><div class="ex-head"><div class="ex-name">${esc(it.name)}</div></div>
+  <div class="rx-c">${rxChips(it)}</div>${it.notes?`<div class="last">${esc(it.notes)}</div>`:""}
+  <div class="last">${last?`Última vez (${last.date}): ${last.sets.map(s=>`<b>${setLabel(s)}</b>`).join(" · ")}`:"Sin registros previos."}</div>
+  <div class="note ${h.c||""}" style="${h.c?"":"background:var(--sunk);color:var(--muted)"}">${h.t}</div>
+  <div class="sets"><span></span>${cols.map(k=>`<span class="h">${head[k]}</span>`).join("")}
+  ${rows.map((s,si)=>`<span class="n">${si+1}</span>${cols.map(k=>`<input id="s-${it.id}-${si}-${k}" type="number" inputmode="decimal" step="any" data-set="${it.id}" data-si="${si}" data-k="${k}" value="${esc(s[k]??"")}" placeholder="${esc(ph(si,k))}" aria-label="Serie ${si+1} ${head[k]}">`).join("")}`).join("")}</div>
+  <div class="row"><button class="btn small ghost" data-addset="${it.id}">+ Serie</button>${rows.length>1?`<button class="btn small ghost" data-delset="${it.id}">− Serie</button>`:""}</div></div>`;
+}
 VIEWS.hoy=()=>{
   if(!todayDay){const idx=WEEKMAP[new Date().getDay()];todayDay=(S.routine.days[idx]||S.routine.days[0]).id}
   if(!draft||draft.dayId!==todayDay)newDraft();
   const d=S.routine.days.find(x=>x.id===todayDay)||S.routine.days[0];
-  const tracked=[],other=[];d.blocks.forEach(b=>b.items.forEach(it=>(it.track?tracked:other).push({...it,block:b.title})));
-  /* exercises marked with ● after the draft was created get their set rows now */
-  let grew=false;tracked.forEach(it=>{if(!draft.entries[it.id]||!draft.entries[it.id].length){const n=Math.max(1,Math.min(10,parseInt(it.sets)||3));draft.entries[it.id]=Array.from({length:n},()=>({kg:"",reps:"",rir:"",dist:""}));grew=true}});if(grew)saveDraft();
-  const flag=redFlag();
+  /* every training exercise gets set rows, including ones added to the routine after the draft started */
+  let grew=false;d.blocks.forEach(b=>b.items.forEach(it=>{if(!draft.entries[it.id]||!draft.entries[it.id].length){draft.entries[it.id]=emptySets(it);grew=true}}));if(grew)saveDraft();
+  const flag=redFlag(), blocks=d.blocks.filter(b=>b.items.length), n=trainCount(d);
   return `<section class="panel"><div class="row" style="justify-content:space-between"><h2>${esc(d.title)}</h2><span class="pill">${draft.date}</span></div>
   <label class="f">Sesión<select id="today-day">${S.routine.days.map((x,i)=>`<option value="${x.id}" ${x.id===d.id?"selected":""}>Día ${i+1} · ${esc(x.title)}</option>`).join("")}</select></label>
   <p class="lead">${esc(d.focus)}</p>
   ${flag?`<div class="note bad"><b>Aviso de salud.</b> Registraste dolor agudo, mareo o algo similar. Consulta a un médico antes de seguir subiendo cargas; las progresiones quedan en pausa.</div>`:""}
   <p class="lead" style="font-style:italic">${esc(S.routine.mindset)}</p></section>
-  ${tracked.length?tracked.map(it=>{
-    const ss=sessionsFor(it.name),last=ss[ss.length-1],h=progressionHint(it),rows=draft.entries[it.id]||[];
-    const cols=["kg","reps","rir"].concat(it.du?["dist"]:[]);
-    const head={kg:it.du?"kg":"kg extra",reps:"reps / s",rir:"RIR",dist:it.du||"dist"};
-    const ph=(si,k)=>{const l=last&&last.sets[si];if(l&&l[k]!=null&&l[k]!=="")return l[k];if(k==="rir"&&it.rir)return it.rir;if(k==="dist"&&it.dist)return it.dist;return ""};
-    return `<div class="ex"><div class="ex-head"><div><div class="ex-name">${esc(it.name)}</div><div class="ex-meta">${esc(it.sets)} × ${esc(it.reps)}${it.load?` · ${esc(it.load)}`:""}${it.rir!==""&&it.rir!=null?` · RIR ${esc(it.rir)}`:""}${it.dist?` · ${esc(it.dist)} ${esc(it.du)}`:""}${it.rest?` · desc ${esc(it.rest)}`:""}</div></div><span class="pill">${esc(it.block)}</span></div>
-    <div class="last">${last?`Última vez (${last.date}): ${last.sets.map(s=>`<b>${setLabel(s)}</b>`).join(" · ")}`:"Sin registros previos."}</div>
-    <div class="note ${h.c||""}" style="${h.c?"":"background:var(--sunk);color:var(--muted)"}">${h.t}</div>
-    <div class="sets" style="grid-template-columns:28px repeat(${cols.length},minmax(0,1fr))"><span></span>${cols.map(k=>`<span class="h">${head[k]}</span>`).join("")}
-    ${rows.map((s,si)=>`<span class="n">${si+1}</span>${cols.map(k=>`<input id="s-${it.id}-${si}-${k}" type="number" inputmode="decimal" step="any" data-set="${it.id}" data-si="${si}" data-k="${k}" value="${esc(s[k]??"")}" placeholder="${esc(ph(si,k))}" aria-label="Serie ${si+1} ${head[k]}">`).join("")}`).join("")}</div>
-    <div class="row"><button class="btn small ghost" data-addset="${it.id}">+ Serie</button></div></div>`}).join("")
-    :`<div class="empty">Este día no tiene ejercicios marcados con ● para registrar. Márcalos en <b>Rutina</b>.</div>`}
-  ${other.length?`<section class="panel"><h3>Resto de la sesión</h3><div class="checklist">${other.map(it=>`<label><input type="checkbox" id="c-${it.id}" data-done="${it.id}" ${draft.done[it.id]?"checked":""}><span>${esc(it.name)}${it.notes?`<br><span class="m">${esc(it.notes)}</span>`:""}</span><span class="m">${esc(it.sets)}×${it.dist&&(it.reps==="—"||!it.reps)?`${esc(it.dist)} ${esc(it.du)}`:esc(it.reps)+(it.dist?` · ${esc(it.dist)} ${esc(it.du)}`:"")}</span></label>`).join("")}</div></section>`:""}
-  <section class="panel"><h3>Práctica diaria</h3><div class="checklist">${S.routine.daily.map(it=>`<label><input type="checkbox" id="dl-${it.id}" data-done="${it.id}" ${draft.done[it.id]?"checked":""}><span>${esc(it.name)}</span><span class="m">${esc(it.sets)}×${esc(it.reps)}</span></label>`).join("")}</div></section>
+  ${checkSecToday("Calentamiento",d.warmup)}
+  ${n?`<div class="sec-h hoy-sec"><span class="sec-t">Entrenamiento</span><span class="m">${n} ejercicios</span></div>
+  ${blocks.map(b=>`<h3 class="hoy-blk">${esc(b.title)}</h3>${b.items.map(exCard).join("")}`).join("")}`
+  :`<div class="empty">Este día no tiene ejercicios de entrenamiento. Palomea lo que hiciste y guarda la sesión.</div>`}
+  ${checkSecToday("Enfriamiento",d.cooldown)}
   <section class="panel"><label class="f">Notas de la sesión<textarea id="today-notes" placeholder="Sensaciones, molestias, clima…">${esc(draft.notes)}</textarea></label>
   <button class="btn primary" id="save-session">Guardar sesión</button>
-  ${S.logs.length?`<details><summary class="lead" style="cursor:pointer">Historial de sesiones (${S.logs.length})</summary><div class="tblwrap"><table><tr><th>Fecha</th><th>Día</th><th class="n">Series</th><th class="n">Distancia</th><th></th></tr>${[...S.logs].reverse().slice(0,30).map(l=>{const m=l.entries.reduce((a,e)=>a+(toM(e.dist,e.du)||0),0);return `<tr><td>${l.date}</td><td>${esc(l.dayTitle||l.dayId)}</td><td class="n">${l.entries.length}</td><td class="n">${m?fmtDist(m,m>=1000?"km":"m"):"–"}</td><td><button class="iconbtn" data-act="del-log" data-id="${l.id}" aria-label="Borrar sesión">×</button></td></tr>`}).join("")}</table></div></details>`:""}
+  ${S.logs.length?`<details><summary class="lead" style="cursor:pointer">Historial de sesiones (${S.logs.length})</summary><div class="tblwrap"><table><tr><th>Fecha</th><th>Día</th><th class="n">Series</th><th class="n">Distancia</th><th></th></tr>${[...S.logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30).map(l=>{const m=l.entries.reduce((a,e)=>a+(toM(e.dist,e.du)||0),0);return `<tr><td>${l.date}</td><td>${esc(l.dayTitle||l.dayId)}</td><td class="n">${l.entries.length}</td><td class="n">${m?fmtDist(m,m>=1000?"km":"m"):"–"}</td><td><button class="iconbtn" data-act="del-log" data-id="${l.id}" aria-label="Borrar sesión">×</button></td></tr>`}).join("")}</table></div></details>`:""}
   </section>`;
 };
-function todayInput(el){draft.entries[el.dataset.set][+el.dataset.si][el.dataset.k]=el.value;saveDraft()}
+function todayInput(el){const row=(draft.entries[el.dataset.set]||[])[+el.dataset.si];if(!row)return;row[el.dataset.k]=el.value;saveDraft()}
 AFTER.hoy=()=>{
   $("#today-day").onchange=e=>{todayDay=e.target.value;render()};
   $("#today-notes").oninput=e=>{draft.notes=e.target.value;saveDraft()};
-  document.querySelectorAll("[data-done]").forEach(c=>c.onchange=()=>{draft.done[c.dataset.done]=c.checked;saveDraft()});
-  document.querySelectorAll("[data-addset]").forEach(b=>b.onclick=()=>{(draft.entries[b.dataset.addset]||=[]).push({kg:"",reps:"",rir:"",dist:""});saveDraft();render()});
+  document.querySelectorAll("[data-done]").forEach(c=>c.onchange=()=>{draft.done[c.dataset.done]=c.checked;saveDraft();
+    const sec=c.closest("section"),cnt=sec&&sec.querySelector(".cnt");if(cnt){const all=sec.querySelectorAll("[data-done]");cnt.textContent=[...all].filter(x=>x.checked).length+"/"+all.length}});
+  document.querySelectorAll("[data-addset]").forEach(b=>b.onclick=()=>{(draft.entries[b.dataset.addset]||=[]).push({reps:"",kg:"",dist:"",rir:""});saveDraft();render()});
+  document.querySelectorAll("[data-delset]").forEach(b=>b.onclick=()=>{const r=draft.entries[b.dataset.delset];if(r&&r.length>1)r.pop();saveDraft();render()});
   $("#save-session").onclick=()=>{
     const d=S.routine.days.find(x=>x.id===draft.dayId),entries=[];
     const has=v=>v!==""&&v!=null;
-    d.blocks.forEach(b=>b.items.forEach(it=>{(draft.entries[it.id]||[]).forEach((s,si)=>{if(has(s.kg)||has(s.reps)||(it.du&&has(s.dist)))entries.push({ex:it.name,set:si+1,kg:num(s.kg)??0,reps:num(s.reps),rir:has(s.rir)?num(s.rir):null,dist:it.du&&has(s.dist)?num(s.dist):null,du:it.du||""})})}));
-    if(!entries.length&&!draft.notes){toast("Registra al menos una serie o una nota");return}
-    const rec={id:uid(),date:draft.date,dayId:d.id,dayTitle:d.title,entries,notes:draft.notes,done:Object.keys(draft.done).filter(k=>draft.done[k]).length};
+    d.blocks.forEach(b=>b.items.forEach(it=>{(draft.entries[it.id]||[]).forEach((s,si)=>{
+      if(has(s.kg)||has(s.reps)||has(s.dist))entries.push({ex:it.name,block:b.title,set:si+1,kg:num(s.kg)??0,reps:has(s.reps)?num(s.reps):null,rir:has(s.rir)?num(s.rir):null,dist:has(s.dist)?num(s.dist):null,du:has(s.dist)?(it.du||"m"):(it.du||"")})})}));
+    const warmupDone=d.warmup.filter(w=>draft.done[w.id]).map(w=>w.name),cooldownDone=d.cooldown.filter(w=>draft.done[w.id]).map(w=>w.name);
+    if(!entries.length&&!draft.notes&&!warmupDone.length&&!cooldownDone.length){toast("Registra al menos una serie, una palomita o una nota");return}
+    const rec={id:uid(),date:draft.date,dayId:d.id,dayTitle:d.title,entries,warmupDone,cooldownDone,notes:draft.notes,done:warmupDone.length+cooldownDone.length};
     S.logs.push(rec);saveRecord("logs",rec);
     try{localStorage.removeItem(LS+"-draft")}catch(e){}
     draft=null;render();toast(RED.test(rec.notes)?"Sesión guardada. Revisa el aviso de salud.":"Sesión guardada");
@@ -643,12 +730,12 @@ VIEWS.progreso=()=>{
 
   <section class="panel"><h2>Ajustes sugeridos</h2>
   ${redFlag()?`<div class="note bad"><b>Aviso de salud:</b> consulta a un médico. Las subidas de carga están en pausa.</div>`:""}
-  ${sug.length?sug.map((s,si)=>`<div class="note warn"><b>${esc(s.title)}.</b> ${esc(s.why)}${s.type!=="ejercicio"?` <button class="btn small" style="margin-left:6px" data-act="apply-sug" data-si="${si}">Aplicar</button>`:""}</div>`).join(""):`<div class="note ok">Sin ajustes por ahora. Las reglas revisan: peso 2 semanas sin moverse con adherencia ≥ 80% (±150 kcal), energía o sueño &lt; 5 (−20% volumen) y 3 sesiones sin mejorar en un ejercicio ●.</div>`}
+  ${sug.length?sug.map((s,si)=>`<div class="note warn"><b>${esc(s.title)}.</b> ${esc(s.why)}${s.type!=="ejercicio"?` <button class="btn small" style="margin-left:6px" data-act="apply-sug" data-si="${si}">Aplicar</button>`:""}</div>`).join(""):`<div class="note ok">Sin ajustes por ahora. Las reglas revisan: peso 2 semanas sin moverse con adherencia ≥ 80% (±150 kcal), energía o sueño &lt; 5 (−20% volumen) y 3 sesiones sin mejorar en un ejercicio.</div>`}
   ${S.profile.adjustments.length?`<h3>Historial de ajustes</h3><div class="tblwrap"><table><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Motivo</th></tr>${[...S.profile.adjustments].reverse().map(a=>`<tr><td>${a.date}</td><td>${esc(a.type)}</td><td>${esc(a.detail)}</td><td style="white-space:normal;min-width:220px">${esc(a.why)}</td></tr>`).join("")}</table></div>`:""}
   </section>
 
   <section class="panel"><h2>Rendimiento y carga</h2>
-  <p class="lead">Barras: carga movida por sesión (kg extra × reps). Línea: índice de rendimiento, 100 = tu primera sesión de cada ejercicio ●; combina peso corporal + lastre, reps y RIR (1RM estimado, Epley).</p>
+  <p class="lead">Barras: carga movida por sesión (kg extra × reps). Línea: índice de rendimiento, 100 = tu primera sesión de cada ejercicio; combina peso corporal + lastre, reps y RIR (1RM estimado, Epley).</p>
   ${perfChart()}</section>
 
   <section class="panel"><h2>Kilómetros por sesión</h2>
@@ -764,7 +851,7 @@ function lineChart(pts,unit){
 function applySuggestion(si){
   const s=suggestions()[si];if(!s)return;const p=S.profile;
   if(s.type==="calorias"){p.kcalAdjust=(num(p.kcalAdjust)||0)+s.delta;p.adjustments.push({date:today(),type:"calorías",detail:`${s.delta>0?"+":""}${s.delta} kcal (ajuste total ${p.kcalAdjust})`,why:s.why})}
-  if(s.type==="volumen"){S.routine.days.forEach(d=>d.blocks.forEach(b=>b.items.forEach(it=>{const n=parseInt(it.sets);if(it.track&&n>1)it.sets=String(Math.max(1,Math.round(n*0.8)))})));saveDoc("routine");p.adjustments.push({date:today(),type:"volumen",detail:"−20% series en ejercicios ●",why:s.why})}
+  if(s.type==="volumen"){S.routine.days.forEach(d=>d.blocks.forEach(b=>b.items.forEach(it=>{const n=parseInt(it.sets);if(n>1)it.sets=String(Math.max(1,Math.round(n*0.8)))})));saveDoc("routine");p.adjustments.push({date:today(),type:"volumen",detail:"−20% series del entrenamiento",why:s.why})}
   saveDoc("profile");render();toast("Ajuste aplicado y registrado");
 }
 AFTER.progreso=()=>{
@@ -787,27 +874,27 @@ VIEWS.guia=()=>`
 <h3>Tu semana en 4 pasos</h3>
 <ol>
 <li><b>Una vez:</b> llena <b>Perfil</b> (edad, estatura, peso, objetivo, equipo, lesiones, alimentos). Con eso se calculan tus calorías.</li>
-<li><b>Cada entreno:</b> abre <b>Hoy</b>, registra cada serie y toca <b>Guardar sesión</b>.</li>
+<li><b>Cada entreno:</b> abre <b>Hoy</b>, palomea el calentamiento, registra cada serie del entrenamiento, palomea el enfriamiento y toca <b>Guardar sesión</b>.</li>
 <li><b>Cada ${esc(S.profile.checkinDay||"domingo")}:</b> haz el <b>check-in</b> en <b>Progreso</b> y revisa los ajustes sugeridos.</li>
 <li><b>Cuando quieras:</b> pregúntale al <b>Coach IA</b> por tu progresión, tu plan de la semana o tus skills.</li>
 </ol></section>
 
-<section class="panel guide"><h2>Hoy</h2><ul>
-<li>Abre solo el día de la semana: lunes = Día 1 … domingo = Día 7. Puedes cambiarlo en <b>Sesión</b>.</li>
-<li>Solo aparecen con casillas los ejercicios marcados con <b>●</b> en Rutina; el resto sale como checklist.</li>
-<li>Columnas: <b>kg extra</b> (lastre sobre tu peso; 0 si es solo peso corporal), <b>reps</b> (o segundos en holds), <b>RIR</b> (reps que te faltaron para el fallo) y <b>m/km</b> si el ejercicio tiene distancia.</li>
-<li>El texto gris en cada casilla es lo que hiciste la vez pasada. Debajo del nombre verás la <b>sugerencia de progresión</b>.</li>
-<li>Escribe en <b>Notas</b> molestias o sensaciones. Si escribes "dolor agudo", "mareo" o similar, aparece un aviso médico y se pausan las subidas de carga.</li>
-<li>Lo que escribes queda como borrador aunque cierres la app; se registra al tocar <b>Guardar sesión</b>.</li>
+<section class="panel guide"><h2>Rutina = tu plan</h2><ul>
+<li>Cada día tiene 3 secciones: <b>Calentamiento</b>, <b>Entrenamiento</b> y <b>Enfriamiento</b>.</li>
+<li>Se ve en modo lectura. Toca <b>Editar día</b> para agregar, quitar, renombrar u ordenar (↑ ↓) ejercicios, y <b>Listo</b> al terminar.</li>
+<li><b>Calentamiento y Enfriamiento:</b> solo nombre y cantidad o tiempo ("3 min", "2 × 30"). En Hoy salen como palomitas.</li>
+<li><b>Entrenamiento:</b> se organiza en bloques (Skill, Main Strength, Core…). Cada ejercicio lleva series, reps, carga, distancia + unidad, RIR objetivo, descanso y notas.</li>
+<li><b>RIR objetivo:</b> la app compara tu RIR real contra este número para decirte si subir o mantener.</li>
+<li><b>Distancia:</b> elige m o km (Long Run, Farmer Carry, sprints). Si la dejas en "—", en Hoy la columna usa metros.</li>
+<li><b>Restaurar rutina base</b> vuelve al programa original sin borrar tus registros.</li>
 </ul></section>
 
-<section class="panel guide"><h2>Rutina</h2><ul>
-<li>Todo es editable: nombre del programa, días, bloques y cada ejercicio. Usa <b>+ Ejercicio</b>, <b>+ Bloque</b> y la <b>×</b> para borrar.</li>
-<li>Campos: series · reps (rango, "max", "30-45 s") · carga · <b>RIR objetivo</b> · <b>distancia + unidad</b> · descanso · <b>●</b>.</li>
-<li><b>RIR objetivo:</b> la app compara tu RIR real contra este número para decirte si subir o mantener.</li>
-<li><b>Distancia:</b> elige m o km para que aparezca la columna de distancia en Hoy (Farmer Carry, Long Run, sprints).</li>
-<li><b>●</b> = se registra con datos y entra en las gráficas y en las reglas de estancamiento.</li>
-<li><b>Restaurar rutina base</b> vuelve al programa original sin borrar tus registros.</li>
+<section class="panel guide"><h2>Hoy = tu registro</h2><ul>
+<li>Abre solo el día de la semana: lunes = Día 1 … domingo = Día 7. Puedes cambiarlo en <b>Sesión</b>.</li>
+<li>Todos los ejercicios de Entrenamiento aparecen con sus series y 4 casillas: <b>Reps / s</b> (o segundos en holds), <b>Kg</b> (lastre sobre tu peso; vacío si es peso corporal), <b>distancia</b> y <b>RIR</b> (reps que te faltaron para el fallo). Llena solo las que apliquen.</li>
+<li>El texto gris en cada casilla es lo que hiciste la vez pasada. Debajo verás la <b>sugerencia de progresión</b>. Usa <b>+ Serie / − Serie</b> si hiciste más o menos series.</li>
+<li>Escribe en <b>Notas</b> molestias o sensaciones. Si escribes "dolor agudo", "mareo" o similar, aparece un aviso médico y se pausan las subidas de carga.</li>
+<li>Lo que escribes queda como borrador aunque cierres la app; se registra al tocar <b>Guardar sesión</b>.</li>
 </ul></section>
 
 <section class="panel guide"><h2>Cómo decide la progresión</h2><ul>
@@ -828,10 +915,10 @@ VIEWS.guia=()=>`
 <li><b>Check-in:</b> peso promedio (pésate 3 o más mañanas), medidas, adherencia, energía, sueño, hambre y la habilidad nueva del mes.</li>
 <li><b>Reglas automáticas:</b>
   <ul><li>Peso sin moverse 2 semanas con adherencia ≥ 80% → ±150 kcal.</li>
-  <li>Energía o sueño promedio menor a 5 → −20% de series en ejercicios ●.</li>
+  <li>Energía o sueño promedio menor a 5 → −20% de series en el entrenamiento.</li>
   <li>3 sesiones sin superar tu mejor serie → cambia el esquema o el ejercicio.</li></ul></li>
 <li>Toca <b>Aplicar</b> para aceptar un ajuste; queda en el historial con el dato que lo motivó.</li>
-<li><b>Gráficas:</b> rendimiento y carga (100 = tu inicio), kilómetros por sesión, peso, cintura y cada ejercicio ● (carga, reps, distancia o RIR).</li>
+<li><b>Gráficas:</b> rendimiento y carga (100 = tu inicio), kilómetros por sesión, peso, cintura y cada ejercicio de entrenamiento (carga, reps, distancia o RIR).</li>
 </ul></section>
 
 <section class="panel guide"><h2>Coach IA y tus datos</h2><ul>
@@ -845,12 +932,12 @@ VIEWS.guia=()=>`
 const SYS=`Eres el Fitness & Training Coach de Daniel: disciplinado, empático, profesional y basado en evidencia. Responde en español, claro y conciso, con estructura (calentamiento, bloques principales, enfriamiento, movilidad) cuando aplique y explica el porqué en una línea por recomendación. Prioriza progresión, prevención de lesiones y constancia; integra hábitos y psicología deportiva cuando ayude. Reglas de seguridad: nunca propongas déficits mayores a 25%, ayunos prolongados ni suplementos de riesgo; si hay dolor agudo, mareo o una condición médica, recomienda consultar a un médico y no subas cargas. Si te faltan datos (cargas, RM, tiempos), dilo y pide exactamente cuáles.`;
 function context(){
   const n=nutrition();
-  const logs=S.logs.slice(-12).map(l=>({date:l.date,day:l.dayTitle,sets:l.entries.map(e=>`${e.ex} s${e.set}: ${e.kg}kg×${e.reps??"-"}${e.du&&e.dist!=null?` ${e.dist}${e.du}`:""}${e.rir!=null?` RIR${e.rir}`:""}`),notes:l.notes}));
-  const routine=S.routine.days.map((d,i)=>({dia:i+1,titulo:d.title,bloques:d.blocks.map(b=>({bloque:b.title,ejercicios:b.items.map(it=>`${it.name} ${it.sets}×${it.reps}${it.load?" @"+it.load:""}${it.rir!==""&&it.rir!=null?" RIR obj "+it.rir:""}${it.dist?` dist ${it.dist}${it.du}`:""}${it.track?" [●]":""}`)}))}));
-  return JSON.stringify({perfil:{...S.profile,adjustments:S.profile.adjustments.slice(-5)},nutricion:n&&{kcal:r0(n.kcal),proteina_g:r0(n.prot),grasa_g:r0(n.fat),carbs_g:r0(n.carbs)},rutina:{nombre:S.routine.name,dias:routine,diaria:S.routine.daily.map(i=>i.name),metas:S.routine.goals},sesiones_recientes:logs,checkins:S.checkins.slice(-6),ajustes_sugeridos_por_reglas:suggestions().map(s=>s.title+": "+s.why)});
+  const logs=S.logs.slice(-12).map(l=>({date:l.date,day:l.dayTitle,sets:l.entries.map(e=>`${e.ex} s${e.set}: ${e.kg}kg×${e.reps??"-"}${e.du&&e.dist!=null?` ${e.dist}${e.du}`:""}${e.rir!=null?` RIR${e.rir}`:""}`),calentamiento:l.warmupDone,enfriamiento:l.cooldownDone,notes:l.notes}));
+  const routine=S.routine.days.map((d,i)=>({dia:i+1,titulo:d.title,calentamiento:d.warmup.map(w=>`${w.name}${w.amount?" "+w.amount:""}`),entrenamiento:d.blocks.map(b=>({bloque:b.title,ejercicios:b.items.map(it=>`${it.name} ${it.sets}×${it.reps}${it.load?" @"+it.load:""}${it.rir!==""&&it.rir!=null?" RIR obj "+it.rir:""}${it.dist?` dist ${it.dist}${it.du}`:""}`)})),enfriamiento:d.cooldown.map(w=>`${w.name}${w.amount?" "+w.amount:""}`)}));
+  return JSON.stringify({perfil:{...S.profile,adjustments:S.profile.adjustments.slice(-5)},nutricion:n&&{kcal:r0(n.kcal),proteina_g:r0(n.prot),grasa_g:r0(n.fat),carbs_g:r0(n.carbs)},rutina:{nombre:S.routine.name,dias:routine,metas:S.routine.goals},sesiones_recientes:logs,checkins:S.checkins.slice(-6),ajustes_sugeridos_por_reglas:suggestions().map(s=>s.title+": "+s.why)});
 }
 const PRESETS=[
-  ["prog","Revisar mi progresión","Analiza mis sesiones y check-ins. Para cada ejercicio ● dime: qué carga/reps usar la próxima sesión, si toca descarga, y qué datos te faltan. Cierra con 3 prioridades para esta semana."],
+  ["prog","Revisar mi progresión","Analiza mis sesiones y check-ins. Para cada ejercicio de entrenamiento dime: qué carga/reps usar la próxima sesión, si toca descarga, y qué datos te faltan. Cierra con 3 prioridades para esta semana."],
   ["week","Plan de la semana","Con mi rutina actual, mis metas a 12 meses y mi progreso, propón el plan de esta semana día por día con ajustes concretos (series, reps, carga, RIR). Incluye opciones de 30 min para días ocupados."],
   ["recovery","Optimizar recuperación","Con mis datos de sueño, energía y volumen semanal, dame recomendaciones de recuperación concretas y si debo modificar algo de la carga semanal (running + calistenia)."],
   ["skills","Skills (handstand / planche)","Evalúa mi bloque de skills y propón la siguiente progresión hacia free handstand, strict HSPU y tuck/straddle planche, con criterios para avanzar de paso."]
