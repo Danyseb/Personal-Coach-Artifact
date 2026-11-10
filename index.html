@@ -389,13 +389,13 @@ function sessionsFor(ex){
     .map(l=>{const es=l.entries.filter(e=>e.ex===ex);
       const top=es.reduce((b,e)=>{const c={kg:num(e.kg)||0,reps:num(e.reps)||0,m:toM(e.dist,e.du)||0,rir:num(e.rir),du:e.du||""};return(!b||better(c,b))?c:b},null);
       const totalM=es.reduce((a,e)=>a+(toM(e.dist,e.du)||0),0);
-      return {date:l.date,sets:es,top,totalM,du:(es.find(e=>e.du)||{}).du||""}}).sort((a,b)=>a.date.localeCompare(b.date));
+      return {id:l.id,date:l.date,sets:es,top,totalM,du:(es.find(e=>e.du)||{}).du||""}}).sort((a,b)=>a.date.localeCompare(b.date));
 }
 function better(a,b){return a.kg>b.kg||(a.kg===b.kg&&(a.reps>b.reps||(a.reps===b.reps&&(a.m||0)>(b.m||0))))}
 function topLabel(t){return t.m&&!t.kg&&!t.reps?fmtDist(t.m,t.du):`${t.kg} kg × ${t.reps}${t.m?` · ${fmtDist(t.m,t.du)}`:""}`}
 function topReps(r){const m=String(r).match(/(\d+)\s*[-–]\s*(\d+)/);if(m)return +m[2];const n=num(r);return n}
 function progressionHint(item){
-  const ss=sessionsFor(item.name), rirT=num(item.rir);
+  const ss=sessionsFor(item.name).filter(x=>!draft||(x.id!==draft.editId&&x.date<=draft.date)), rirT=num(item.rir);
   if(!ss.length) return {t:`Primera vez: elige una carga con RIR ${rirT??2} y regístrala.`,c:""};
   if(redFlag()) return {t:"Aumentos de carga en pausa por un aviso de salud reciente. Mantén la carga.",c:"bad"};
   const last=ss[ss.length-1],top=topReps(item.reps);
@@ -633,25 +633,55 @@ document.addEventListener("click",e=>{
   if(act==="del-meal"){S.menu.meals.splice(+ds.mi,1);saveDoc("menu");$("#menu").innerHTML=menuHTML();refreshCalc()}
   if(act==="apply-sug"){applySuggestion(+ds.si)}
   if(act==="del-checkin"){const id=ds.id;S.checkins=S.checkins.filter(c=>c.id!==id);delRecord("checkins",id);render()}
-  if(act==="del-log"){const id=ds.id;S.logs=S.logs.filter(c=>c.id!==id);delRecord("logs",id);render()}
+  if(act==="edit-log"){startEdit(ds.id)}
+  if(act==="del-log"){const id=ds.id;if(draft&&draft.editId===id)endEdit();S.logs=S.logs.filter(c=>c.id!==id);delRecord("logs",id);render()}
 });
 
 /* ---------- HOY ---------- */
 const WEEKMAP=[6,0,1,2,3,4,5]; // Sun..Sat -> Day index
-let todayDay=null, draft=null;
+let todayDay=null, draft=null, stash=null;
+try{stash=JSON.parse(localStorage.getItem(LS+"-stash")||"null")}catch(e){}
+function savedDraft(){try{return JSON.parse(localStorage.getItem(LS+"-draft")||"null")}catch(e){return null}}
 const emptySets=it=>Array.from({length:Math.max(1,Math.min(10,parseInt(it.sets)||3))},()=>({reps:"",kg:"",dist:"",rir:""}));
 function newDraft(){const d=S.routine.days.find(x=>x.id===todayDay)||S.routine.days[0];
   draft={dayId:d.id,date:today(),entries:{},notes:"",done:{}};
-  try{const sv=JSON.parse(localStorage.getItem(LS+"-draft")||"null");if(sv&&sv.dayId===d.id&&sv.date===draft.date)draft=sv}catch(e){}
+  const sv=savedDraft();
+  if(sv&&sv.dayId===d.id&&(sv.editId?S.logs.some(l=>l.id===sv.editId):(sv.savedOn||sv.date)===today()))draft=sv;
 }
-function saveDraft(){try{localStorage.setItem(LS+"-draft",JSON.stringify(draft))}catch(e){}}
+function saveDraft(){draft.savedOn=today();try{localStorage.setItem(LS+"-draft",JSON.stringify(draft))}catch(e){}}
+/* opens a saved session in Hoy with every box editable; unmatched exercises are kept in "Otros registros" */
+function draftFromLog(l){
+  const d=S.routine.days.find(x=>x.id===l.dayId)||S.routine.days[0];
+  const dr={dayId:d.id,date:l.date,entries:{},notes:l.notes||"",done:{},editId:l.id,extra:[]};
+  const byName={},wc={};d.blocks.forEach(b=>b.items.forEach(it=>{byName[it.name]=it}));[...d.warmup,...d.cooldown].forEach(w=>{wc[w.name]=w});
+  [...(l.warmupDone||[]),...(l.cooldownDone||[])].forEach(n=>{if(wc[n])dr.done[wc[n].id]=true});
+  const groups={};(l.entries||[]).forEach(e=>{(groups[e.ex]||=[]).push(e)});
+  Object.entries(groups).forEach(([name,es])=>{
+    es.sort((a,b)=>(a.set||0)-(b.set||0));
+    const rows=es.map(e=>({reps:e.reps??"",kg:num(e.kg)?e.kg:"",dist:e.dist??"",rir:e.rir??""}));
+    if(byName[name])dr.entries[byName[name].id]=rows;
+    else if(wc[name])dr.done[wc[name].id]=true;
+    else{const id="x-"+uid();dr.extra.push({id,name,du:(es.find(e=>e.du)||{}).du||"",sets:String(rows.length),reps:"",load:"",rir:"",dist:"",rest:"",notes:""});dr.entries[id]=rows}
+  });
+  return dr;
+}
+function startEdit(id){
+  const l=S.logs.find(x=>x.id===id);if(!l)return;
+  if(draft&&!draft.editId){stash=draft;try{localStorage.setItem(LS+"-stash",JSON.stringify(stash))}catch(e){}}
+  draft=draftFromLog(l);todayDay=draft.dayId;saveDraft();
+  tab="hoy";try{localStorage.setItem(LS+"-tab",tab)}catch(_){}render();window.scrollTo(0,0);toast("Editando la sesión del "+l.date);
+}
+function endEdit(){
+  draft=stash||null;stash=null;try{localStorage.removeItem(LS+"-stash")}catch(e){}
+  if(draft){todayDay=draft.dayId;saveDraft()}else{try{localStorage.removeItem(LS+"-draft")}catch(e){}todayDay=null}
+}
 function checkSecToday(title,list){
   if(!list.length)return "";
   const n=list.filter(w=>draft.done[w.id]).length;
   return `<section class="panel"><div class="sec-h"><span class="sec-t">${title}</span><span class="m cnt">${n}/${list.length}</span></div><div class="checklist">${list.map(w=>`<label><input type="checkbox" id="c-${w.id}" data-done="${w.id}" ${draft.done[w.id]?"checked":""}><span>${esc(w.name)}${w.notes?`<br><span class="m">${esc(w.notes)}</span>`:""}</span><span class="m">${esc(w.amount||"")}</span></label>`).join("")}</div></section>`;
 }
 function exCard(it){
-  const ss=sessionsFor(it.name),last=ss[ss.length-1],h=progressionHint(it),rows=draft.entries[it.id]||[];
+  const ss=sessionsFor(it.name).filter(x=>x.id!==draft.editId&&x.date<=draft.date),last=ss[ss.length-1],h=progressionHint(it),rows=draft.entries[it.id]||[];
   const cols=["reps","kg","dist","rir"],head={reps:"Reps / s",kg:"Kg",dist:it.du||"m",rir:"RIR"};
   const ph=(si,k)=>{const l=last&&last.sets[si];if(l&&l[k]!=null&&l[k]!==""&&!(k==="kg"&&!l[k]))return l[k];if(k==="rir"&&it.rir)return it.rir;if(k==="dist"&&it.dist)return it.dist;return ""};
   return `<div class="ex"><div class="ex-head"><div class="ex-name">${esc(it.name)}</div></div>
@@ -663,14 +693,19 @@ function exCard(it){
   <div class="row"><button class="btn small ghost" data-addset="${it.id}">+ Serie</button>${rows.length>1?`<button class="btn small ghost" data-delset="${it.id}">− Serie</button>`:""}</div></div>`;
 }
 VIEWS.hoy=()=>{
-  if(!todayDay){const idx=WEEKMAP[new Date().getDay()];todayDay=(S.routine.days[idx]||S.routine.days[0]).id}
+  if(!todayDay){const sv=savedDraft();
+    if(sv&&sv.editId&&S.logs.some(l=>l.id===sv.editId))todayDay=sv.dayId;
+    else{const idx=WEEKMAP[new Date().getDay()];todayDay=(S.routine.days[idx]||S.routine.days[0]).id}}
   if(!draft||draft.dayId!==todayDay)newDraft();
   const d=S.routine.days.find(x=>x.id===todayDay)||S.routine.days[0];
   /* every training exercise gets set rows, including ones added to the routine after the draft started */
   let grew=false;d.blocks.forEach(b=>b.items.forEach(it=>{if(!draft.entries[it.id]||!draft.entries[it.id].length){draft.entries[it.id]=emptySets(it);grew=true}}));if(grew)saveDraft();
   const flag=redFlag(), blocks=d.blocks.filter(b=>b.items.length), n=trainCount(d);
-  return `<section class="panel"><div class="row" style="justify-content:space-between"><h2>${esc(d.title)}</h2><span class="pill">${draft.date}</span></div>
-  <label class="f">Sesión<select id="today-day">${S.routine.days.map((x,i)=>`<option value="${x.id}" ${x.id===d.id?"selected":""}>Día ${i+1} · ${esc(x.title)}</option>`).join("")}</select></label>
+  const ed=!!draft.editId, extra=draft.extra||[];
+  return `<section class="panel"><div class="row" style="justify-content:space-between"><h2>${esc(d.title)}</h2><span class="pill ${ed?"ok":""}">${ed?"editando":"nueva"} · ${draft.date}</span></div>
+  ${ed?`<div class="note ok"><b>Editando la sesión del ${esc(draft.date)}.</b> Cambia o completa cualquier dato y toca <b>Guardar cambios</b>. <button class="btn small" id="cancel-edit" style="margin-left:6px">Cancelar</button></div>`:""}
+  <div class="grid"><label class="f">Sesión<select id="today-day" ${ed?"disabled":""}>${S.routine.days.map((x,i)=>`<option value="${x.id}" ${x.id===d.id?"selected":""}>Día ${i+1} · ${esc(x.title)}</option>`).join("")}</select></label>
+  <label class="f">Fecha<input type="date" id="today-date" value="${esc(draft.date)}" max="${today()}"></label></div>
   <p class="lead">${esc(d.focus)}</p>
   ${flag?`<div class="note bad"><b>Aviso de salud.</b> Registraste dolor agudo, mareo o algo similar. Consulta a un médico antes de seguir subiendo cargas; las progresiones quedan en pausa.</div>`:""}
   <p class="lead" style="font-style:italic">${esc(S.routine.mindset)}</p></section>
@@ -678,16 +713,19 @@ VIEWS.hoy=()=>{
   ${n?`<div class="sec-h hoy-sec"><span class="sec-t">Entrenamiento</span><span class="m">${n} ejercicios</span></div>
   ${blocks.map(b=>`<h3 class="hoy-blk">${esc(b.title)}</h3>${b.items.map(exCard).join("")}`).join("")}`
   :`<div class="empty">Este día no tiene ejercicios de entrenamiento. Palomea lo que hiciste y guarda la sesión.</div>`}
+  ${extra.length?`<h3 class="hoy-blk">Otros registros de esta sesión</h3>${extra.map(exCard).join("")}`:""}
   ${checkSecToday("Enfriamiento",d.cooldown)}
   <section class="panel"><label class="f">Notas de la sesión<textarea id="today-notes" placeholder="Sensaciones, molestias, clima…">${esc(draft.notes)}</textarea></label>
-  <button class="btn primary" id="save-session">Guardar sesión</button>
-  ${S.logs.length?`<details><summary class="lead" style="cursor:pointer">Historial de sesiones (${S.logs.length})</summary><div class="tblwrap"><table><tr><th>Fecha</th><th>Día</th><th class="n">Series</th><th class="n">Distancia</th><th></th></tr>${[...S.logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30).map(l=>{const m=l.entries.reduce((a,e)=>a+(toM(e.dist,e.du)||0),0);return `<tr><td>${l.date}</td><td>${esc(l.dayTitle||l.dayId)}</td><td class="n">${l.entries.length}</td><td class="n">${m?fmtDist(m,m>=1000?"km":"m"):"–"}</td><td><button class="iconbtn" data-act="del-log" data-id="${l.id}" aria-label="Borrar sesión">×</button></td></tr>`}).join("")}</table></div></details>`:""}
-  </section>`;
+  <div class="row"><button class="btn primary" id="save-session">${ed?"Guardar cambios":"Guardar sesión"}</button>${ed?`<button class="btn" id="cancel-edit2">Cancelar</button>`:""}</div>
+  </section>
+  ${S.logs.length?`<section class="panel"><h3>Sesiones guardadas</h3><p class="lead" style="font-size:13px">Toca <b>Editar</b> para abrir una sesión pasada con todas sus casillas y completar pesos o corregir datos.</p><div class="tblwrap"><table><tr><th>Fecha</th><th>Día</th><th class="n">Series</th><th class="n">Distancia</th><th></th><th></th></tr>${[...S.logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30).map(l=>{const m=l.entries.reduce((a,e)=>a+(toM(e.dist,e.du)||0),0);return `<tr><td>${l.date}</td><td>${esc(l.dayTitle||l.dayId)}</td><td class="n">${l.entries.length}</td><td class="n">${m?fmtDist(m,m>=1000?"km":"m"):"–"}</td><td><button class="btn small" data-act="edit-log" data-id="${l.id}" ${draft.editId===l.id?"disabled":""}>${draft.editId===l.id?"Abierta":"Editar"}</button></td><td><button class="iconbtn" data-act="del-log" data-id="${l.id}" aria-label="Borrar sesión">×</button></td></tr>`}).join("")}</table></div></section>`:""}`;
 };
 function todayInput(el){const row=(draft.entries[el.dataset.set]||[])[+el.dataset.si];if(!row)return;row[el.dataset.k]=el.value;saveDraft()}
 AFTER.hoy=()=>{
   $("#today-day").onchange=e=>{todayDay=e.target.value;render()};
   $("#today-notes").oninput=e=>{draft.notes=e.target.value;saveDraft()};
+  $("#today-date").onchange=e=>{draft.date=e.target.value||today();saveDraft();render()};
+  ["#cancel-edit","#cancel-edit2"].forEach(sel=>{const b=$(sel);if(b)b.onclick=()=>{endEdit();render();toast("Edición cancelada")}});
   document.querySelectorAll("[data-done]").forEach(c=>c.onchange=()=>{draft.done[c.dataset.done]=c.checked;saveDraft();
     const sec=c.closest("section"),cnt=sec&&sec.querySelector(".cnt");if(cnt){const all=sec.querySelectorAll("[data-done]");cnt.textContent=[...all].filter(x=>x.checked).length+"/"+all.length}});
   document.querySelectorAll("[data-addset]").forEach(b=>b.onclick=()=>{(draft.entries[b.dataset.addset]||=[]).push({reps:"",kg:"",dist:"",rir:""});saveDraft();render()});
@@ -695,14 +733,18 @@ AFTER.hoy=()=>{
   $("#save-session").onclick=()=>{
     const d=S.routine.days.find(x=>x.id===draft.dayId),entries=[];
     const has=v=>v!==""&&v!=null;
-    d.blocks.forEach(b=>b.items.forEach(it=>{(draft.entries[it.id]||[]).forEach((s,si)=>{
+    const groups=d.blocks.map(b=>({title:b.title,items:b.items}));if((draft.extra||[]).length)groups.push({title:"Otros",items:draft.extra});
+    groups.forEach(b=>b.items.forEach(it=>{(draft.entries[it.id]||[]).forEach((s,si)=>{
       if(has(s.kg)||has(s.reps)||has(s.dist))entries.push({ex:it.name,block:b.title,set:si+1,kg:num(s.kg)??0,reps:has(s.reps)?num(s.reps):null,rir:has(s.rir)?num(s.rir):null,dist:has(s.dist)?num(s.dist):null,du:has(s.dist)?(it.du||"m"):(it.du||"")})})}));
     const warmupDone=d.warmup.filter(w=>draft.done[w.id]).map(w=>w.name),cooldownDone=d.cooldown.filter(w=>draft.done[w.id]).map(w=>w.name);
     if(!entries.length&&!draft.notes&&!warmupDone.length&&!cooldownDone.length){toast("Registra al menos una serie, una palomita o una nota");return}
-    const rec={id:uid(),date:draft.date,dayId:d.id,dayTitle:d.title,entries,warmupDone,cooldownDone,notes:draft.notes,done:warmupDone.length+cooldownDone.length};
-    S.logs.push(rec);saveRecord("logs",rec);
-    try{localStorage.removeItem(LS+"-draft")}catch(e){}
-    draft=null;render();toast(RED.test(rec.notes)?"Sesión guardada. Revisa el aviso de salud.":"Sesión guardada");
+    const editing=draft.editId&&S.logs.find(l=>l.id===draft.editId);
+    const rec={...(editing||{}),id:editing?editing.id:uid(),date:draft.date,dayId:d.id,dayTitle:d.title,entries,warmupDone,cooldownDone,notes:draft.notes,done:warmupDone.length+cooldownDone.length};
+    if(editing){rec.editedAt=new Date().toISOString();S.logs=S.logs.map(l=>l.id===rec.id?rec:l)}else S.logs.push(rec);
+    S.logs.sort((a,b)=>(a.date||"").localeCompare(b.date||""));
+    saveRecord("logs",rec);
+    if(editing)endEdit();else{try{localStorage.removeItem(LS+"-draft")}catch(e){}draft=null}
+    render();toast(RED.test(rec.notes)?"Guardado. Revisa el aviso de salud.":editing?"Cambios guardados en la sesión del "+rec.date:"Sesión guardada");
   };
 };
 
