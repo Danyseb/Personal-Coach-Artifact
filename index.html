@@ -324,14 +324,14 @@ async function initDb(){
   try{
     for(const key of ["profile","routine","menu"]){
       const snap=await db.doc("coach/"+key).get();
-      if(snap.exists&&snap.data().data){S[key]=snap.data().data;if(key==="routine")routineSaved=true}
+      if(snap.exists&&snap.data().data){S[key]=JSON.parse(JSON.stringify(snap.data().data));if(key==="routine")routineSaved=true}
       else if(loc&&loc[key]) await db.doc("coach/"+key).set({data:loc[key],updated:new Date().toISOString()});
     }
     S.profile=Object.assign(BASE_PROFILE(),S.profile);
     if(migrateRoutine(S.routine)) await db.doc("coach/routine").set({data:JSON.parse(JSON.stringify(S.routine)),updated:new Date().toISOString()});
     for(const coll of ["logs","checkins"]){
       const qs=await db.collection(coll).get();
-      const remote=qs.docs.map(d=>d.data());
+      const remote=qs.docs.map(d=>JSON.parse(JSON.stringify(d.data())));
       const ids=new Set(remote.map(r=>r.id));
       const localOnly=(loc&&loc[coll]||[]).filter(r=>!ids.has(r.id));
       for(const r of localOnly){await db.collection(coll).doc(r.id).set(r);remote.push(r)}
