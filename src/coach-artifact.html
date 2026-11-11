@@ -129,6 +129,13 @@ details.day>summary::-webkit-details-marker{display:none}
 .fields label{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-width:0}
 @media (max-width:520px){.wrow{grid-template-columns:minmax(0,1fr) 100px}.wrow .mv{grid-column:1/-1;justify-content:flex-end}}
 .hoy-sec{padding:4px 2px 0}
+.shop-add{display:grid;grid-template-columns:minmax(0,1fr) 110px 130px auto;gap:6px;align-items:center}
+@media (max-width:620px){.shop-add{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.shop-add #shop-text{grid-column:1/-1}.shop-add button{grid-column:1/-1}}
+.shop-g{display:flex;flex-direction:column}
+.shop-row{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.shop-t{flex:1;min-width:0;overflow-wrap:anywhere}
+.shop-row.is-done .shop-t{text-decoration:line-through;color:var(--muted)}
+#shop-clear.armed{color:var(--bad);border-color:var(--bad)}
 .seg{display:inline-flex;border:1px solid var(--accent-mid);border-radius:999px;overflow:hidden;flex:0 0 auto}
 .seg button{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;background:transparent;color:var(--muted);border:0;padding:6px 12px;min-height:34px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
@@ -286,7 +293,7 @@ const BASE_MENU=()=>({meals:[
   {id:uid(),name:"Desayuno",items:[]},{id:uid(),name:"Comida",items:[]},{id:uid(),name:"Snack",items:[]},{id:uid(),name:"Cena",items:[]}]});
 
 /* ======================= state & storage ======================= */
-const S={profile:BASE_PROFILE(),routine:BASE_ROUTINE(),menu:BASE_MENU(),logs:[],checkins:[]};
+const S={profile:BASE_PROFILE(),routine:BASE_ROUTINE(),menu:BASE_MENU(),shopping:{items:[]},logs:[],checkins:[]};
 let db=null, dbState="local", routineSaved=false;
 const LS="coach-daniel-v1";
 function lsLoad(){try{const r=localStorage.getItem(LS);return r?JSON.parse(r):null}catch(e){return null}}
@@ -317,7 +324,7 @@ async function initDb(){
   dbState="loading";setSync();
   const timer=setTimeout(()=>{if(dbState==="loading"){dbState="local";setSync()}},10000);
   try{
-    for(const key of ["profile","routine","menu"]){
+    for(const key of ["profile","routine","menu","shopping"]){
       const snap=await db.doc("coach/"+key).get();
       if(snap.exists&&snap.data().data){S[key]=JSON.parse(JSON.stringify(snap.data().data));if(key==="routine")routineSaved=true}
       else if(loc&&loc[key]) await db.doc("coach/"+key).set({data:loc[key],updated:new Date().toISOString()});
@@ -493,6 +500,17 @@ AFTER.perfil=()=>{$("#btn-export").onclick=async()=>{const t=JSON.stringify(S,nu
 
 /* ---------- NUTRICIÓN ---------- */
 VIEWS.nutricion=()=>`
+<section class="panel"><div class="mealhead"><h2>Lista de compras</h2><span class="pill" id="shop-count"></span></div>
+<p class="lead">Anota lo que necesitas comprar en cuanto te acuerdes. Palomea al comprarlo.</p>
+<form class="shop-add" id="shop-form" autocomplete="off">
+  <input id="shop-text" placeholder="Ej. Pechuga de pollo, báscula para mancuernas…" aria-label="Qué comprar" maxlength="120">
+  <input id="shop-qty" placeholder="Cantidad" aria-label="Cantidad" maxlength="30">
+  <select id="shop-cat" aria-label="Categoría">${SHOP_CATS.map(c=>`<option ${c===shopCat?"selected":""}>${c}</option>`).join("")}</select>
+  <button class="btn primary small" type="submit">Agregar</button>
+</form>
+<div id="shop"></div>
+<div class="row"><button class="btn small ghost" id="shop-from-menu" type="button">+ Agregar alimentos del menú</button></div>
+</section>
 <section class="panel"><h2>Objetivo diario</h2><div id="calc"></div>
 <div class="grid">${fld("profile.deficitPct","Déficit % (grasa)","number",'min="10" max="20"')}${fld("profile.surplusPct","Superávit % (masa)","number",'min="5" max="10"')}${fld("profile.protPerKg","Proteína g/kg","number",'min="1.6" max="2.4"')}${fld("profile.fatPerKg","Grasa g/kg","number",'min="0.6" max="1.2"')}${fld("profile.kcalAdjust","Ajuste acumulado (kcal)","number")}</div>
 </section>
@@ -528,7 +546,37 @@ function menuTotHTML(){
   return `<div class="stats" style="margin-top:6px"><div class="stat"><span class="k">Total kcal ${st}</span><span class="v">${r0(t.kcal)}</span></div><div class="stat"><span class="k">P / C / G</span><span class="v" style="font-size:24px">${r0(t.p)} / ${r0(t.c)} / ${r0(t.f)}<small>g</small></span>${n?`<span class="x">Meta ${r0(n.prot)} / ${r0(n.carbs)} / ${r0(n.fat)} g</span>`:""}</div></div>`;
 }
 function menuInput(el){const m=S.menu.meals[+el.dataset.mi];if(el.dataset.fi===undefined)m.name=el.value;else{const k=el.dataset.mk;m.items[+el.dataset.fi][k]=k==="food"?el.value:(el.value===""?"":num(el.value))}saveDoc("menu");const t=$("#menutot");if(t)t.innerHTML=menuTotHTML()}
-AFTER.nutricion=()=>{refreshCalc();$("#menu").innerHTML=menuHTML();$("#add-meal").onclick=()=>{S.menu.meals.push({id:uid(),name:"Comida",items:[]});saveDoc("menu");$("#menu").innerHTML=menuHTML()}};
+const SHOP_CATS=["Súper","Equipo","Suplementos","Otro"];
+let shopCat="Súper"; try{shopCat=localStorage.getItem(LS+"-shopcat")||"Súper"}catch(e){}
+function shopHTML(){
+  const items=S.shopping.items||[], pend=items.filter(i=>!i.done), done=items.filter(i=>i.done);
+  const row=i=>`<label class="shop-row ${i.done?"is-done":""}"><input type="checkbox" id="sh-${i.id}" data-shop="${i.id}" ${i.done?"checked":""}><span class="shop-t">${esc(i.text)}${i.qty?` <span class="m">${esc(i.qty)}</span>`:""}</span><button type="button" class="iconbtn" data-shopdel="${i.id}" aria-label="Quitar ${esc(i.text)}">×</button></label>`;
+  if(!items.length)return `<div class="empty">Tu lista está vacía. Escribe arriba lo primero que necesitas comprar.</div>`;
+  const groups=SHOP_CATS.map(c=>[c,pend.filter(i=>(i.cat||"Otro")===c)]).filter(g=>g[1].length);
+  return `${pend.length?groups.map(([c,l])=>`<div class="shop-g"><div class="blk-t">${c} · ${l.length}</div>${l.map(row).join("")}</div>`).join(""):`<div class="note ok">Todo comprado.</div>`}
+  ${done.length?`<details class="shop-g"><summary class="blk-t" style="cursor:pointer">Comprados · ${done.length}</summary>${done.map(row).join("")}<div class="row" style="margin-top:8px"><button type="button" class="btn small danger" id="shop-clear">Borrar comprados</button></div></details>`:""}`;
+}
+function shopRefresh(){const el=$("#shop");if(!el)return;el.innerHTML=shopHTML();const p=(S.shopping.items||[]).filter(i=>!i.done).length;$("#shop-count").textContent=p?`${p} pendiente${p>1?"s":""}`:"al día"}
+function shopAdd(text,qty,cat){text=String(text||"").trim();if(!text)return false;
+  const ex=S.shopping.items.find(i=>!i.done&&i.text.toLowerCase()===text.toLowerCase());
+  if(ex){if(qty)ex.qty=qty;return false}
+  S.shopping.items.push({id:uid(),text,qty:String(qty||"").trim(),cat:cat||"Otro",done:false,added:today()});return true}
+AFTER.nutricion=()=>{refreshCalc();
+  S.shopping.items=S.shopping.items||[];shopRefresh();
+  $("#shop-form").onsubmit=e=>{e.preventDefault();const t=$("#shop-text"),q=$("#shop-qty"),c=$("#shop-cat");
+    if(!t.value.trim()){t.focus();return}
+    const added=shopAdd(t.value,q.value,c.value);saveDoc("shopping");shopRefresh();toast(added?"Agregado a la lista":"Ya estaba en la lista");t.value="";q.value="";t.focus()};
+  $("#shop-cat").onchange=e=>{shopCat=e.target.value;try{localStorage.setItem(LS+"-shopcat",shopCat)}catch(_){}};
+  $("#shop").onchange=e=>{const id=e.target.dataset.shop;if(!id)return;const it=S.shopping.items.find(i=>i.id===id);if(!it)return;it.done=e.target.checked;it.doneOn=it.done?today():"";saveDoc("shopping");
+    /* strike through in place; it moves to "Comprados" next time the tab opens, so the list never shifts under your finger */
+    const r=e.target.closest(".shop-row");if(r)r.classList.toggle("is-done",it.done);
+    const p=S.shopping.items.filter(i=>!i.done).length;$("#shop-count").textContent=p?`${p} pendiente${p>1?"s":""}`:"al día"};
+  $("#shop").onclick=e=>{
+    const del=e.target.closest("[data-shopdel]");if(del){e.preventDefault();S.shopping.items=S.shopping.items.filter(i=>i.id!==del.dataset.shopdel);saveDoc("shopping");shopRefresh();return}
+    const clr=e.target.closest("#shop-clear");if(clr){if(!clr.classList.contains("armed")){clr.classList.add("armed");clr.textContent="¿Seguro? Toca otra vez";return}
+      S.shopping.items=S.shopping.items.filter(i=>!i.done);saveDoc("shopping");shopRefresh();toast("Comprados borrados")}};
+  $("#shop-from-menu").onclick=()=>{let n=0;S.menu.meals.forEach(m=>m.items.forEach(f=>{if(shopAdd(f.food,"","Súper"))n++}));saveDoc("shopping");shopRefresh();toast(n?`${n} alimento${n>1?"s":""} del menú agregado${n>1?"s":""}`:"Nada nuevo que agregar del menú")};
+$("#menu").innerHTML=menuHTML();$("#add-meal").onclick=()=>{S.menu.meals.push({id:uid(),name:"Comida",items:[]});saveDoc("menu");$("#menu").innerHTML=menuHTML()}};
 
 /* ---------- RUTINA ---------- */
 let openDays=new Set(["d1"]), editDays=new Set();
@@ -974,6 +1022,7 @@ VIEWS.guia=()=>`
 <li>Proteína y grasa van por kg de peso; los carbohidratos son el resto. Puedes mover los porcentajes y g/kg.</li>
 <li><b>Ajuste acumulado</b> guarda los cambios de calorías que aplicas desde Progreso.</li>
 <li>El menú es editable; el total te dice si estás dentro de ±5% de tu meta. También lo puedes generar en Coach IA.</li>
+<li><b>Lista de compras:</b> arriba de Nutrición. Agrega cosas por categoría (súper, equipo, suplementos, otro), palomea al comprarlas y borra los comprados cuando quieras. <b>+ Agregar alimentos del menú</b> pasa tu menú del día a la lista.</li>
 </ul></section>
 
 <section class="panel guide"><h2>Progreso</h2><ul>

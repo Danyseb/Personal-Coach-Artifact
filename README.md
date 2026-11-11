@@ -5,7 +5,7 @@ App personal de entrenamiento y nutrición de Daniel, construida como artefacto 
 ## Qué hace
 - **Hoy:** registro de series (kg, reps, RIR y distancia) con lo que hiciste la última vez y una sugerencia de progresión.
 - **Rutina:** programa *Hybrid Athlete & Calisthenics v2.0* organizado en Calentamiento, Entrenamiento y Enfriamiento; 100% editable.
-- **Nutrición:** calorías y macros con Mifflin-St Jeor, calculados en código; menú del día con comparación ±5%.
+- **Nutrición:** lista de compras por categoría; calorías y macros con Mifflin-St Jeor, calculados en código; menú del día con comparación ±5%.
 - **Progreso:** check-in semanal, ajustes automáticos por reglas, gráficas de rendimiento y carga, kilómetros por sesión, peso y carga por ejercicio.
 - **Perfil** y **Coach IA** (este último solo funciona dentro de claude.ai).
 - Modo claro (blanco/azul) y oscuro (negro/naranja).
