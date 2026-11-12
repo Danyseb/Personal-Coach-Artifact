@@ -136,6 +136,7 @@ details.day>summary::-webkit-details-marker{display:none}
 .shop-t{flex:1;min-width:0;overflow-wrap:anywhere}
 .shop-row.is-done .shop-t{text-decoration:line-through;color:var(--muted)}
 #shop-clear.armed{color:var(--bad);border-color:var(--bad)}
+.segs{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
 .seg{display:inline-flex;border:1px solid var(--accent-mid);border-radius:999px;overflow:hidden;flex:0 0 auto}
 .seg button{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;background:transparent;color:var(--muted);border:0;padding:6px 12px;min-height:34px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
@@ -213,15 +214,28 @@ function toW(it){
   if(!a&&it.dist)a=`${it.dist} ${it.du||""}`.trim();
   return {id:it.id||uid(),name:it.name,amount:a,notes:it.notes||""};
 }
+/* how the first column is measured: "" = reps, "s" = seconds, "min" = minutes (guessed from the routine text) */
+const RU_LAB={"":"Reps","s":"Seg","min":"Min"};
+function guessRU(it){
+  const r=String(it.reps||"").trim();
+  if(/^[\d.,]+(\s*[-–]\s*[\d.,]+)?\s*min$/i.test(r))return "min";
+  if(/^[\d.,]+(\s*[-–]\s*[\d.,]+)?\s*(s|seg|sec)$/i.test(r))return "s";
+  if(/max/i.test(r)&&/hold|l-sit|lean|crow|plank\b|hang/i.test(it.name||""))return "s";
+  return "";
+}
+const ruOf=it=>{const d=((typeof draft!=="undefined"&&draft&&draft.ruMode)||{})[it.id];return d!==undefined?d:(it.ru||"")};
+const ruTxt=u=>u==="s"?" s":u==="min"?" min":"";
 function toT(it){
   const t={id:it.id||uid(),name:it.name,sets:String(it.sets??""),reps:String(it.reps??""),load:it.load||"",rir:it.rir??"",dist:it.dist??"",du:it.du??"",rest:it.rest||"",notes:it.notes||""};
   const d=DIST_DEFAULTS[t.name];
   if(d&&!t.du&&!t.dist){t.dist=d[0];t.du=d[1];if(t.reps.replace(/\s/g,"")===d[0]+d[1])t.reps="—"}
+  t.ru=it.ru!==undefined?it.ru:guessRU(t);
   return t;
 }
 /* converts the old one-list-per-block routine (and the removed daily practice) into sections; returns true if it changed anything */
 function migrateRoutine(r){
-  if(r.schema===2){let ch=false;(r.days||[]).forEach(d=>{for(const k of ["warmup","cooldown","blocks"]) if(!Array.isArray(d[k])){d[k]=[];ch=true}});return ch}
+  if(r.schema===2){let ch=false;(r.days||[]).forEach(d=>{for(const k of ["warmup","cooldown","blocks"]) if(!Array.isArray(d[k])){d[k]=[];ch=true}
+    d.blocks.forEach(b=>b.items.forEach(it=>{if(it.ru===undefined){it.ru=guessRU(it);ch=true}}))});return ch}
   r.days=(r.days||[]).map(d=>{
     const nd={id:d.id,title:d.title,focus:d.focus||"",warmup:[],blocks:[],cooldown:[]};
     (d.blocks||[]).forEach(b=>{
@@ -383,7 +397,7 @@ const fmtDist=(m,u)=>m==null?"":u==="km"?`${r1(m/1000)} km`:`${r0(m)} m`;
 function setLabel(s){
   const parts=[];
   if(num(s.kg)) parts.push(`${s.kg}kg${s.kgMode==="db"?" DB":""}`);
-  if(s.reps!=null&&s.reps!=="") parts.push(parts.length?`×${s.reps}`:`${s.reps}`);
+  if(s.reps!=null&&s.reps!=="") parts.push(s.ru?`${parts.length?" · ":""}${s.reps}${ruTxt(s.ru)}`:(parts.length?`×${s.reps}`:`${s.reps}`));
   if(s.du&&s.dist!=null&&s.dist!=="") parts.push(`${parts.length?" · ":""}${s.dist}${s.du}`);
   if(s.rir!=null&&s.rir!=="") parts.push(` @${s.rir}`);
   return parts.join("")||"–";
@@ -391,12 +405,12 @@ function setLabel(s){
 function sessionsFor(ex){
   return S.logs.filter(l=>l.entries.some(e=>e.ex===ex&&(num(e.kg)!==null||num(e.reps)!==null||num(e.dist)!==null)))
     .map(l=>{const es=l.entries.filter(e=>e.ex===ex);
-      const top=es.reduce((b,e)=>{const c={kg:kgTot(e),reps:num(e.reps)||0,m:toM(e.dist,e.du)||0,rir:num(e.rir),du:e.du||""};return(!b||better(c,b))?c:b},null);
+      const top=es.reduce((b,e)=>{const c={kg:kgTot(e),reps:num(e.reps)||0,m:toM(e.dist,e.du)||0,rir:num(e.rir),du:e.du||"",ru:e.ru||""};return(!b||better(c,b))?c:b},null);
       const totalM=es.reduce((a,e)=>a+(toM(e.dist,e.du)||0),0);
       return {id:l.id,date:l.date,sets:es,top,totalM,du:(es.find(e=>e.du)||{}).du||""}}).sort((a,b)=>a.date.localeCompare(b.date));
 }
 function better(a,b){return a.kg>b.kg||(a.kg===b.kg&&(a.reps>b.reps||(a.reps===b.reps&&(a.m||0)>(b.m||0))))}
-function topLabel(t){return t.m&&!t.kg&&!t.reps?fmtDist(t.m,t.du):`${t.kg} kg × ${t.reps}${t.m?` · ${fmtDist(t.m,t.du)}`:""}`}
+function topLabel(t){if(t.m&&!t.kg&&!t.reps)return fmtDist(t.m,t.du);const rp=`${t.reps}${ruTxt(t.ru)}`;return `${t.kg?`${t.kg} kg × `:""}${rp}${t.m?` · ${fmtDist(t.m,t.du)}`:""}`}
 function topReps(r){const m=String(r).match(/(\d+)\s*[-–]\s*(\d+)/);if(m)return +m[2];const n=num(r);return n}
 function progressionHint(item){
   const ss=sessionsFor(item.name).filter(x=>!draft||(x.id!==draft.editId&&x.date<=draft.date)), rirT=num(item.rir);
@@ -420,6 +434,9 @@ function progressionHint(item){
   if(avgRir!==null&&rirT!==null&&avgRir<rirT-0.5) return {t:`Quedaste más cerca del fallo (RIR prom. ${r1(avgRir)}) que tu objetivo (RIR ${rirT}). Repite la carga y prioriza técnica.`,c:"warn"};
   const hit=top&&last.sets.length&&last.sets.every(s=>(num(s.reps)||0)>=top);
   const rirOk=last.sets.every(s=>num(s.rir)===null||num(s.rir)>=(rirT??1));
+  const tu=ruOf(item);
+  if(tu&&hit) return {t:`Llegaste a ${top}${ruTxt(tu)} en todas las series: pasa a la siguiente progresión (o agrega lastre) y vuelve a construir tiempo.`,c:"ok"};
+  if(tu){const best=Math.max(...last.sets.map(x=>num(x.reps)||0));return {t:best?`Tu mejor serie fue ${best}${ruTxt(tu)}. Busca +${tu==="min"?"1–2 min":"3–5 s"} en alguna serie, con buena técnica.`:"Registra cuánto aguantaste en cada serie.",c:best?"ok":""}}
   if(hit&&rirOk) return {t:`Llegaste al tope del rango con RIR ≥ ${rirT??1}: sube ${item.kgMode==="db"?"1–2 kg por mancuerna":"1.25–2.5 kg"} (o pasa a la siguiente progresión).`,c:"ok"};
   if(hit) return {t:`Tope del rango, pero por debajo de RIR ${rirT??1}: repite carga antes de subir.`,c:"warn"};
   if(avgRir!==null&&rirT!==null&&avgRir>rirT+1.5) return {t:`Te sobraron reps (RIR prom. ${r1(avgRir)} vs objetivo ${rirT}): sube reps o carga la próxima.`,c:"ok"};
@@ -584,7 +601,7 @@ function secList(sec,di,bi){const d=S.routine.days[di];if(!d)return null;return 
 function trainCount(d){return d.blocks.reduce((n,b)=>n+b.items.length,0)}
 function rxChips(it){
   const c=[],reps=String(it.reps||"").trim(),noReps=!reps||reps==="—";
-  const amt=noReps&&it.dist?`${it.dist} ${it.du}`:(reps||"—");
+  const amt=noReps&&it.dist?`${it.dist} ${it.du}`:(reps?(it.ru&&/^[\d.,]+(\s*[-–]\s*[\d.,]+)?$/.test(reps)?reps+ruTxt(it.ru):reps):"—");
   c.push(`<span class="chip a">${esc(it.sets||"—")} × ${esc(amt)}</span>`);
   if(it.dist&&!noReps)c.push(`<span class="chip">${esc(it.dist)} ${esc(it.du)}</span>`);
   if(it.load)c.push(`<span class="chip">${esc(/^\d+([.,]\d+)?$/.test(String(it.load).trim())?"+"+it.load+" kg"+(it.kgMode==="db"?" DB":""):it.load)}</span>`);
@@ -613,7 +630,7 @@ function trainEdit(it,di,bi,ii,len){
   const a=`data-ri="t" data-di="${di}" data-bi="${bi}" data-ii="${ii}"`;
   const f=(k,lab,ph,extra="")=>`<label>${lab}<input id="t-${it.id}-${k}" ${a} data-k="${k}" value="${esc(it[k]??"")}" placeholder="${ph}" ${extra}></label>`;
   return `<div class="tcard"><div class="top"><input id="t-${it.id}-name" ${a} data-k="name" value="${esc(it.name)}" aria-label="Ejercicio">${mvBtns("t",di,bi,ii,len)}</div>
-  <div class="fields">${f("sets","Series","—",'inputmode="numeric"')}${f("reps","Reps / s","—")}${f("load","Carga kg","—")}<label>Kg en<select id="t-${it.id}-km" ${a} data-k="kgMode"><option value="" ${it.kgMode!=="db"?"selected":""}>Total</option><option value="db" ${it.kgMode==="db"?"selected":""}>DB (c/u)</option></select></label>${f("dist","Distancia","—",'inputmode="decimal"')}<label>Unidad<select id="t-${it.id}-du" ${a} data-k="du"><option value="" ${!it.du?"selected":""}>—</option><option value="m" ${it.du==="m"?"selected":""}>m</option><option value="km" ${it.du==="km"?"selected":""}>km</option></select></label>${f("rir","RIR obj.","—",'inputmode="decimal"')}${f("rest","Descanso","—")}</div>
+  <div class="fields">${f("sets","Series","—",'inputmode="numeric"')}${f("reps","Reps / tiempo","—")}<label>Medida<select id="t-${it.id}-ru" ${a} data-k="ru"><option value="" ${!it.ru?"selected":""}>Reps</option><option value="s" ${it.ru==="s"?"selected":""}>Segundos</option><option value="min" ${it.ru==="min"?"selected":""}>Minutos</option></select></label>${f("load","Carga kg","—")}<label>Kg en<select id="t-${it.id}-km" ${a} data-k="kgMode"><option value="" ${it.kgMode!=="db"?"selected":""}>Total</option><option value="db" ${it.kgMode==="db"?"selected":""}>DB (c/u)</option></select></label>${f("dist","Distancia","—",'inputmode="decimal"')}<label>Unidad<select id="t-${it.id}-du" ${a} data-k="du"><option value="" ${!it.du?"selected":""}>—</option><option value="m" ${it.du==="m"?"selected":""}>m</option><option value="km" ${it.du==="km"?"selected":""}>km</option></select></label>${f("rir","RIR obj.","—",'inputmode="decimal"')}${f("rest","Descanso","—")}</div>
   <input id="t-${it.id}-notes" ${a} data-k="notes" value="${esc(it.notes||"")}" placeholder="Notas (opcional)" aria-label="Notas"></div>`;
 }
 function dayEdit(d,di){
@@ -704,8 +721,8 @@ function draftFromLog(l){
   Object.entries(groups).forEach(([name,es])=>{
     es.sort((a,b)=>(a.set||0)-(b.set||0));
     const rows=es.map(e=>({reps:e.reps??"",kg:num(e.kg)?e.kg:"",dist:e.dist??"",rir:e.rir??""}));
-    const em=(es.find(e=>num(e.kg))||{}).kgMode;
-    if(byName[name]){dr.entries[byName[name].id]=rows;if(em)dr.kgMode[byName[name].id]=em}
+    const em=(es.find(e=>num(e.kg))||{}).kgMode, eru=(es.find(e=>e.ru!==undefined)||{}).ru;
+    if(byName[name]){dr.entries[byName[name].id]=rows;if(em)dr.kgMode[byName[name].id]=em;if(eru!==undefined)(dr.ruMode||={})[byName[name].id]=eru}
     else if(wc[name])dr.done[wc[name].id]=true;
     else{const id="x-"+uid();dr.extra.push({id,name,du:(es.find(e=>e.du)||{}).du||"",sets:String(rows.length),reps:"",load:"",rir:"",dist:"",rest:"",notes:""});dr.entries[id]=rows;if(em)dr.kgMode[id]=em}
   });
@@ -729,13 +746,14 @@ function checkSecToday(title,list){
 function kgModeOf(it){return ((draft&&draft.kgMode)||{})[it.id]||(it.kgMode==="db"?"db":"total")}
 function exCard(it){
   const ss=sessionsFor(it.name).filter(x=>x.id!==draft.editId&&x.date<=draft.date),last=ss[ss.length-1],h=progressionHint(it),rows=draft.entries[it.id]||[];
-  const mode=kgModeOf(it),cols=["reps","kg","dist","rir"],head={reps:"Reps / s",kg:mode==="db"?"Kg DB":"Kg total",dist:it.du||"m",rir:"RIR"};
+  const mode=kgModeOf(it),ru=ruOf(it),cols=["reps","kg","dist","rir"],head={reps:RU_LAB[ru],kg:mode==="db"?"Kg DB":"Kg total",dist:it.du||"m",rir:"RIR"};
   const ph=(si,k)=>{const l=last&&last.sets[si];
     if(k==="kg"&&l&&num(l.kg)){const lm=l.kgMode==="db"?"db":"total";return lm===mode?l.kg:r1(mode==="db"?num(l.kg)/2:num(l.kg)*2)}
     if(l&&l[k]!=null&&l[k]!==""&&k!=="kg")return l[k];if(k==="rir"&&it.rir)return it.rir;if(k==="dist"&&it.dist)return it.dist;return ""};
   return `<div class="ex"><div class="ex-head"><div class="ex-name">${esc(it.name)}</div></div>
   <div class="row" style="justify-content:space-between"><div class="rx-c">${rxChips(it)}</div>
-  <div class="seg" role="group" aria-label="Cómo registras el peso"><button type="button" data-kgmode="total" data-item="${it.id}" aria-pressed="${mode!=="db"}">Kg total</button><button type="button" data-kgmode="db" data-item="${it.id}" aria-pressed="${mode==="db"}">Kg × DB</button></div></div>${it.notes?`<div class="last">${esc(it.notes)}</div>`:""}
+  <div class="segs"><div class="seg" role="group" aria-label="Cómo mides la primera columna">${["","s","min"].map(u=>`<button type="button" data-rumode="${u}" data-item="${it.id}" aria-pressed="${ru===u}">${RU_LAB[u]}</button>`).join("")}</div>
+  <div class="seg" role="group" aria-label="Cómo registras el peso"><button type="button" data-kgmode="total" data-item="${it.id}" aria-pressed="${mode!=="db"}">Kg total</button><button type="button" data-kgmode="db" data-item="${it.id}" aria-pressed="${mode==="db"}">Kg × DB</button></div></div></div>${it.notes?`<div class="last">${esc(it.notes)}</div>`:""}
   <div class="last">${last?`Última vez (${last.date}): ${last.sets.map(s=>`<b>${setLabel(s)}</b>`).join(" · ")}`:"Sin registros previos."}</div>
   <div class="note ${h.c||""}" style="${h.c?"":"background:var(--sunk);color:var(--muted)"}">${h.t}</div>
   <div class="sets"><span></span>${cols.map(k=>`<span class="h">${head[k]}</span>`).join("")}
@@ -789,13 +807,21 @@ AFTER.hoy=()=>{
     const it=S.routine.days.flatMap(d=>d.blocks.flatMap(x=>x.items)).find(i=>i.id===id);
     if(it&&(it.kgMode||"total")!==(m==="db"?"db":"total")){it.kgMode=m==="db"?"db":"";saveDoc("routine")}
     render();toast(m==="db"?"Peso por mancuerna (DB): valores divididos entre 2":"Peso total: valores multiplicados por 2")});
+  document.querySelectorAll("[data-rumode]").forEach(b=>b.onclick=()=>{const id=b.dataset.item,u=b.dataset.rumode;
+    const it=S.routine.days.flatMap(d=>d.blocks.flatMap(x=>x.items)).concat(draft.extra||[]).find(i=>i.id===id);if(!it)return;
+    const prev=ruOf(it);if(prev===u)return;
+    /* seconds <-> minutes keep the same time; switching to/from reps keeps the number as typed */
+    if(prev&&u)(draft.entries[id]||[]).forEach(r=>{const v=num(r.reps);if(v)r.reps=String(u==="min"?r1(v/60):r0(v*60))});
+    draft.ruMode=draft.ruMode||{};draft.ruMode[id]=u;saveDraft();
+    if(!String(id).startsWith("x-")&&(it.ru||"")!==u){it.ru=u;saveDoc("routine")}
+    render();toast(u?`Se mide en ${u==="s"?"segundos":"minutos"}`:"Se mide en repeticiones")});
   document.querySelectorAll("[data-delset]").forEach(b=>b.onclick=()=>{const r=draft.entries[b.dataset.delset];if(r&&r.length>1)r.pop();saveDraft();render()});
   $("#save-session").onclick=()=>{
     const d=S.routine.days.find(x=>x.id===draft.dayId),entries=[];
     const has=v=>v!==""&&v!=null;
     const groups=d.blocks.map(b=>({title:b.title,items:b.items}));if((draft.extra||[]).length)groups.push({title:"Otros",items:draft.extra});
     groups.forEach(b=>b.items.forEach(it=>{(draft.entries[it.id]||[]).forEach((s,si)=>{
-      if(has(s.kg)||has(s.reps)||has(s.dist))entries.push({ex:it.name,block:b.title,set:si+1,kg:num(s.kg)??0,kgMode:has(s.kg)?kgModeOf(it):"total",reps:has(s.reps)?num(s.reps):null,rir:has(s.rir)?num(s.rir):null,dist:has(s.dist)?num(s.dist):null,du:has(s.dist)?(it.du||"m"):(it.du||"")})})}));
+      if(has(s.kg)||has(s.reps)||has(s.dist))entries.push({ex:it.name,block:b.title,set:si+1,kg:num(s.kg)??0,kgMode:has(s.kg)?kgModeOf(it):"total",ru:ruOf(it),reps:has(s.reps)?num(s.reps):null,rir:has(s.rir)?num(s.rir):null,dist:has(s.dist)?num(s.dist):null,du:has(s.dist)?(it.du||"m"):(it.du||"")})})}));
     const warmupDone=d.warmup.filter(w=>draft.done[w.id]).map(w=>w.name),cooldownDone=d.cooldown.filter(w=>draft.done[w.id]).map(w=>w.name);
     if(!entries.length&&!draft.notes&&!warmupDone.length&&!cooldownDone.length){toast("Registra al menos una serie, una palomita o una nota");return}
     const editing=draft.editId&&S.logs.find(l=>l.id===draft.editId);
@@ -926,18 +952,19 @@ function exChart(){
   const du=(ss.find(s=>s.du)||{}).du||"m";
   const avail=[];
   if(ss.some(s=>s.top.kg)) avail.push(["kg","Carga (kg)"]);
-  if(ss.some(s=>s.top.reps)) avail.push(["reps","Reps (mejor serie)"]);
+  const cru=(ss.find(s=>s.top.ru)||{top:{}}).top.ru||"";
+  if(ss.some(s=>s.top.reps)) avail.push(["reps",cru==="s"?"Segundos (mejor serie)":cru==="min"?"Minutos (mejor serie)":"Reps (mejor serie)"]);
   if(ss.some(s=>s.totalM)) avail.push(["dist","Distancia total"]);
   if(ss.some(s=>s.sets.some(x=>num(x.rir)!==null))) avail.push(["rir","RIR promedio"]);
   if(!avail.length) avail.push(["kg","Carga (kg)"]);
   if(!avail.some(a=>a[0]===chartMetric)) chartMetric=avail[0][0];
   const pts=ss.map(s=>{
     if(chartMetric==="dist"){const v=du==="km"?r1(s.totalM/1000):r0(s.totalM);return {x:s.date,y:v,lab:`${v} ${du}`}}
-    if(chartMetric==="reps") return {x:s.date,y:s.top.reps,lab:`${s.top.reps} reps`};
+    if(chartMetric==="reps") return {x:s.date,y:s.top.reps,lab:`${s.top.reps}${cru?ruTxt(cru):" reps"}`};
     if(chartMetric==="rir"){const rs=s.sets.map(x=>num(x.rir)).filter(v=>v!==null);if(!rs.length)return null;const v=r1(rs.reduce((a,b)=>a+b,0)/rs.length);return {x:s.date,y:v,lab:`RIR ${v}`}}
     return {x:s.date,y:s.top.kg,lab:topLabel(s.top)};
   }).filter(Boolean);
-  const unit={kg:"kg extra (mejor serie)",reps:"reps",dist:du,rir:"RIR"}[chartMetric];
+  const unit={kg:"kg (mejor serie)",reps:cru==="s"?"segundos":cru==="min"?"minutos":"reps",dist:du,rir:"RIR"}[chartMetric];
   return `<div class="grid"><label class="f">Ejercicio<select id="chart-ex">${exs.map(e=>`<option ${e===chartEx?"selected":""}>${esc(e)}</option>`).join("")}</select></label>
   <label class="f">Métrica<select id="chart-metric">${avail.map(([k,l])=>`<option value="${k}" ${k===chartMetric?"selected":""}>${l}</option>`).join("")}</select></label></div>
   ${lineChart(pts,unit)}`;
@@ -1004,7 +1031,8 @@ VIEWS.guia=()=>`
 
 <section class="panel guide"><h2>Hoy = tu registro</h2><ul>
 <li>Abre solo el día de la semana: lunes = Día 1 … domingo = Día 7. Puedes cambiarlo en <b>Sesión</b>.</li>
-<li>Todos los ejercicios de Entrenamiento aparecen con sus series y 4 casillas: <b>Reps / s</b> (o segundos en holds), <b>Kg</b> (lastre sobre tu peso; vacío si es peso corporal), <b>distancia</b> y <b>RIR</b> (reps que te faltaron para el fallo). Llena solo las que apliquen.</li>
+<li><b>Medida de cada ejercicio:</b> el selector <b>Reps | Seg | Min</b> cambia la primera columna. Holds (handstand, L-sit, planche leans) van en <b>Seg</b> y las prácticas largas (kick-ups) en <b>Min</b>; se detecta sola desde la rutina y la puedes cambiar con un toque. El tiempo cuenta como tu métrica de progreso.</li>
+<li>Todos los ejercicios de Entrenamiento aparecen con sus series y 4 casillas: <b>Reps / Seg / Min</b> según la medida, <b>Kg</b> (lastre sobre tu peso; vacío si es peso corporal), <b>distancia</b> y <b>RIR</b> (reps que te faltaron para el fallo). Llena solo las que apliquen.</li>
 <li>El texto gris en cada casilla es lo que hiciste la vez pasada. Debajo verás la <b>sugerencia de progresión</b>. Usa <b>+ Serie / − Serie</b> si hiciste más o menos series.</li>
 <li>Escribe en <b>Notas</b> molestias o sensaciones. Si escribes "dolor agudo", "mareo" o similar, aparece un aviso médico y se pausan las subidas de carga.</li>
 <li>Lo que escribes queda como borrador aunque cierres la app; se registra al tocar <b>Guardar sesión</b>.</li>
@@ -1046,7 +1074,7 @@ VIEWS.guia=()=>`
 const SYS=`Eres el Fitness & Training Coach de Daniel: disciplinado, empático, profesional y basado en evidencia. Responde en español, claro y conciso, con estructura (calentamiento, bloques principales, enfriamiento, movilidad) cuando aplique y explica el porqué en una línea por recomendación. Prioriza progresión, prevención de lesiones y constancia; integra hábitos y psicología deportiva cuando ayude. Reglas de seguridad: nunca propongas déficits mayores a 25%, ayunos prolongados ni suplementos de riesgo; si hay dolor agudo, mareo o una condición médica, recomienda consultar a un médico y no subas cargas. Si te faltan datos (cargas, RM, tiempos), dilo y pide exactamente cuáles.`;
 function context(){
   const n=nutrition();
-  const logs=S.logs.slice(-12).map(l=>({date:l.date,day:l.dayTitle,sets:l.entries.map(e=>`${e.ex} s${e.set}: ${e.kg}kg${e.kgMode==="db"?" por mancuerna":""}×${e.reps??"-"}${e.du&&e.dist!=null?` ${e.dist}${e.du}`:""}${e.rir!=null?` RIR${e.rir}`:""}`),calentamiento:l.warmupDone,enfriamiento:l.cooldownDone,notes:l.notes}));
+  const logs=S.logs.slice(-12).map(l=>({date:l.date,day:l.dayTitle,sets:l.entries.map(e=>`${e.ex} s${e.set}: ${e.kg}kg${e.kgMode==="db"?" por mancuerna":""}×${e.reps??"-"}${ruTxt(e.ru)}${e.du&&e.dist!=null?` ${e.dist}${e.du}`:""}${e.rir!=null?` RIR${e.rir}`:""}`),calentamiento:l.warmupDone,enfriamiento:l.cooldownDone,notes:l.notes}));
   const routine=S.routine.days.map((d,i)=>({dia:i+1,titulo:d.title,calentamiento:d.warmup.map(w=>`${w.name}${w.amount?" "+w.amount:""}`),entrenamiento:d.blocks.map(b=>({bloque:b.title,ejercicios:b.items.map(it=>`${it.name} ${it.sets}×${it.reps}${it.load?" @"+it.load:""}${it.rir!==""&&it.rir!=null?" RIR obj "+it.rir:""}${it.dist?` dist ${it.dist}${it.du}`:""}`)})),enfriamiento:d.cooldown.map(w=>`${w.name}${w.amount?" "+w.amount:""}`)}));
   return JSON.stringify({perfil:{...S.profile,adjustments:S.profile.adjustments.slice(-5)},nutricion:n&&{kcal:r0(n.kcal),proteina_g:r0(n.prot),grasa_g:r0(n.fat),carbs_g:r0(n.carbs)},rutina:{nombre:S.routine.name,dias:routine,metas:S.routine.goals},sesiones_recientes:logs,checkins:S.checkins.slice(-6),ajustes_sugeridos_por_reglas:suggestions().map(s=>s.title+": "+s.why)});
 }
