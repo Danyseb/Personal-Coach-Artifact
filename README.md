@@ -35,6 +35,12 @@ App personal de entrenamiento y nutrición de Daniel, construida como artefacto 
 
 La guía completa está en la pestaña **Guía** de la app.
 
+## Respaldo y robustez (v13)
+- **Perfil → Respaldo y datos:** descargar o copiar el respaldo (JSON), descargar sesiones en CSV y restaurar un respaldo (con vista previa y deshacer).
+- Los cambios hechos sin conexión quedan pendientes y se suben solos al volver la nube.
+- Datos dañados o incompletos se reparan al cargar; una pestaña con error nunca queda en blanco.
+- Deshacer al borrar sesiones, check-ins, ejercicios, comidas o artículos de la lista.
+
 ## Archivos
 | Archivo | Para qué |
 |---|---|
